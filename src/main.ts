@@ -11,3 +11,8 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
 // setupCounter(document.querySelector<HTMLButtonElement>("#counter")!);
 // setupGame(document.querySelector<HTMLButtonElement>("#counter")!);
 // <button id="counter" type="button"></button>
+
+
+
+let vh = window.innerHeight * 0.01;
+document.documentElement.style.setProperty('--vh', `${vh}px`);
