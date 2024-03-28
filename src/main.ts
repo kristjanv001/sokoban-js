@@ -1,10 +1,13 @@
 import "./style.css";
-import { setupCounter } from "./counter.ts";
+// import { setupGame } from "./game";
+// import { setupCounter } from "./counter.ts";
 
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
-  <div>
-    <button id="counter" type="button"></button>
+  <div >
+
   </div>
 `;
 
-setupCounter(document.querySelector<HTMLButtonElement>("#counter")!);
+// setupCounter(document.querySelector<HTMLButtonElement>("#counter")!);
+// setupGame(document.querySelector<HTMLButtonElement>("#counter")!);
+// <button id="counter" type="button"></button>

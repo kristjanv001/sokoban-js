@@ -4,11 +4,21 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + TS</title>
+    <title>Sokoban Game</title>
   </head>
-  <body>
-    <h1 class="text-3xl font-bold">Hello Sokoban!</h1>
-    <div id="app"></div>
+  <body class="relative min-h-screen bg-red-700">
+    <header class="h-[40px]">
+      <h1 class="text-3xl font-bold">Hello Sokoban!</h1>
+    </header>
+    <main class="relative bg-green-200" style="height: calc(100vh - 144px - 40px);">
+      <div id="app"></div>
+    </main>
+    <aside class="bg-slate-100 h-[144px] sticky top-[100vh] flex flex-col justify-center items-center">
+      <p>Level: 1</p>
+      <p>Time: 0s</p>
+      <p>Steps: 0</p>
+      <button class="rounded-lg bg-blue-200 px-2 py-1">Reset</button>
+    </aside>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
