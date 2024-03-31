@@ -22,7 +22,7 @@ class Level {
   }
 }
 
-function parseLevelsFile(levelsFile: string): Promise<Level[]> {
+async function parseLevelsFile(levelsFile: string): Promise<Level[]> {
   const levels: Level[] = [];
 
   return fetch(levelsFile)
@@ -45,17 +45,17 @@ function parseLevelsFile(levelsFile: string): Promise<Level[]> {
 parseLevelsFile("levels.txt").then((lvls) => {
   console.log(lvls);
 
-  startGame(lvls[0])
+  startLevel(lvls[4])
 });
 
 
-function startGame(l: Level) {
+function startLevel(l: Level) {
 
   const level = l.levelPlan
 
   const gameContainer = document.getElementById("game")!;
   const board = document.createElement("div");
-  board.className = "border-2 border-black mx-auto grid justify-center";
+  board.className = "grid justify-center";
 
   for (let row = 0; row < level.length; row++) {
     const rowElem = document.createElement("div");
@@ -64,7 +64,7 @@ function startGame(l: Level) {
     for (let col = 0; col < level[row].length; col++) {
       const currItem = level[row][col];
       const gridItem = document.createElement("div");
-      gridItem.className = `${charMap[currItem]} h-12 w-12 flex justify-center items-center`;
+      gridItem.className = `${charMap[currItem]} h-5 w-5 flex justify-center items-center`;
 
       const char = document.createElement("span");
       char.textContent = currItem;
