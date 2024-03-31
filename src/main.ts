@@ -22,65 +22,80 @@ class Level {
   }
 }
 
-async function parseLevelsFile(levelsFile: string): Promise<Level[]> {
-  const levels: Level[] = [];
+class Game {
+  currentLevel: number = 1;
+  moves: number = 0;
+  playerPos: any;
+  levels: Level[] = [];
 
-  return fetch(levelsFile)
-    .then((response) => response.text())
-    .then((levelsStr) => {
-      const levelSections = levelsStr.trim().split(/\n\s*\n/);
+  constructor(levelsFile: string) {
+    this.setupGame(levelsFile);
+  }
 
-      levelSections.forEach((section) => {
+  async setupGame(levelsFile: string): Promise<void> {
+    try {
+      this.levels = await this.parseLevelsFile(levelsFile);
+      this.loadLevel(this.levels[1])
+
+    } catch (error) {
+      console.error("Error setting up game:", error);
+    }
+  }
+
+  async parseLevelsFile(levelsFile: string): Promise<Level[]> {
+    try {
+      const response = await fetch(levelsFile);
+      const levelsStr = await response.text();
+      const levelsSections = levelsStr.trim().split(/\n\s*\n/);
+
+      return levelsSections.map((section) => {
         const lines = section.split("\n");
         const levelNum = parseInt(lines[0].replace("Level", "").trim());
         const levelPlanLines = lines.slice(1).filter((line) => /^[ #]/.test(line));
         const levelPlan = levelPlanLines.join("\n");
 
-        levels.push(new Level(levelPlan, levelNum));
+        return new Level(levelPlan, levelNum);
       });
-      return levels;
-    });
-}
+    } catch (error) {
+      console.error("Error parsing levels:", error);
 
-parseLevelsFile("levels.txt").then((lvls) => {
-  console.log(lvls);
-
-  startLevel(lvls[4])
-});
-
-
-function startLevel(l: Level) {
-
-  const level = l.levelPlan
-
-  const gameContainer = document.getElementById("game")!;
-  const board = document.createElement("div");
-  board.className = "grid justify-center";
-
-  for (let row = 0; row < level.length; row++) {
-    const rowElem = document.createElement("div");
-    rowElem.className = "flex";
-
-    for (let col = 0; col < level[row].length; col++) {
-      const currItem = level[row][col];
-      const gridItem = document.createElement("div");
-      gridItem.className = `${charMap[currItem]} h-5 w-5 flex justify-center items-center`;
-
-      const char = document.createElement("span");
-      char.textContent = currItem;
-      gridItem.appendChild(char);
-
-      rowElem.appendChild(gridItem);
+      return [];
     }
-
-    board.appendChild(rowElem);
   }
 
-  gameContainer.appendChild(board);
+  loadLevel(l: Level) {
+    const level = l.levelPlan;
+
+    const gameContainer = document.getElementById("game")!;
+    const board = document.createElement("div");
+    board.className = "grid justify-center";
+
+    for (let row = 0; row < level.length; row++) {
+      const rowElem = document.createElement("div");
+      rowElem.className = "flex";
+
+      for (let col = 0; col < level[row].length; col++) {
+        const currItem = level[row][col];
+        const gridItem = document.createElement("div");
+        gridItem.className = `${charMap[currItem]} h-5 w-5 xs:h-7 xs:w-7 sm:w-9 sm:h-9 md:w-11 md:h-11 lg:w-14 lg:h-14  flex justify-center items-center`;
+
+        const char = document.createElement("span");
+        char.textContent = currItem;
+        gridItem.appendChild(char);
+
+        rowElem.appendChild(gridItem);
+      }
+
+      board.appendChild(rowElem);
+    }
+
+    gameContainer.appendChild(board);
+  }
 }
 
 
-// ===============
+const game1 = new Game("levels.txt")
+
 
 document.getElementById("reset-btn")!.addEventListener("click", () => console.log("reset..."));
 
