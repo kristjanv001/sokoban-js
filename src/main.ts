@@ -11,38 +11,46 @@ const charMap: { [key: string]: string } = {
   "+": "bg-blue-700 rounded-full scale-75", // player on goal
   $: "bg-yellow-700 border-8 border-yellow-800", // box
   "*": "bg-green-600 border-8 border-green-700", // box on goal
-  ".": "bg-yellow-400 border-8 border-yellow-500 rounded-full scale-50", // goal
+  ".": "bg-yellow-400 border-8 border-yellow-500 scale-50 animate-pulse", // goal
   " ": "bg-stone-400", // floor
 };
 
-class Movement {
-  static move(pos: Position, direction: string, level: Level) {
-    let [newRow, newCol] = pos;
+class MovementManager {
+  static move(entity: Player | Box, direction: string, level: Level) {
+    let [newRow, newCol] = entity.position;
+    const [oldRow, oldCol] = entity.position;
 
     switch (direction) {
-      case "up":
+      case "ArrowUp":
         newRow -= 1;
         break;
-      case "down":
+      case "ArrowDown":
         newRow += 1;
         break;
-      case "left":
+      case "ArrowLeft":
         newCol -= 1;
         break;
-      case "right":
+      case "ArrowRight":
         newCol += 1;
         break;
     }
 
-    const newPos: Position = [newRow, newCol];
-    if (this.isValidMove(newPos, level)) {
-      // update the thing's position
-      console.log("updating position in level: ", level)
+    if (MovementManager.isValidMove()) {
+      const oldCell = document.getElementById(`cell-${oldRow}-${oldCol}`);
+      const newCell = document.getElementById(`cell-${newRow}-${newCol}`);
+
+      console.log(oldCell, newCell);
+
+      oldCell!.classList.remove("rounded-full", "bg-blue-700", "scale-75");
+
+      newCell!.classList.remove("bg-stone-400");
+      newCell!.classList.add("bg-blue-700", "rounded-full", "scale-75");
+
+      entity.position = [newRow, newCol];
     }
   }
 
-  static isValidMove(newPos: Position, level: Level): boolean {
-    console.log("validating level: ", level, " with a new position of: ", newPos)
+  static isValidMove(): boolean {
     return true;
   }
 }
@@ -54,11 +62,6 @@ class Player {
   constructor(position: Position) {
     this.position = position;
   }
-
-  move(direction: string, level: Level) {
-    console.log("moving player...")
-    Movement.move(this.position, direction, level);
-  }
 }
 
 class Box {
@@ -69,10 +72,6 @@ class Box {
     this.position = position;
     this.onGoal = onGoal;
   }
-
-  // move(direction: string) {
-  //   Movement.move(this.position, direction);
-  // }
 }
 
 class Goal {
@@ -111,22 +110,24 @@ class Game {
       this.levels = await this.parseLevelsFile(levelsFile);
       this.createLevel(this.levels[this.startLevel - 1], "game");
 
-      // TODO: Refactor
-      const levels = this.levels
-      const currentLevel = this.currentLevel - 1
-
-      document.body.addEventListener("keydown", function (event) {
-        const keyPress = event.code;
-        if (["ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp"].includes(keyPress)) {
-          // console.log(keyPress);
-          // console.log(levels[currentLevel])
-          levels[currentLevel].player?.move("right", levels[currentLevel])
-        }
-      });
-      // ===========
-
+      document.body.addEventListener("keydown", this.handleKeyDown.bind(this));
     } catch (error) {
       console.error("Error setting up game:", error);
+    }
+  }
+
+  handleKeyDown(event: KeyboardEvent): void {
+    const keyPress = event.code;
+    const currentLevelIndex = this.currentLevel - 1;
+    const allowedMovementKeys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
+
+    if (allowedMovementKeys.includes(keyPress)) {
+      const player = this.levels[currentLevelIndex].player;
+      const level = this.levels[currentLevelIndex];
+
+      if (player) {
+        MovementManager.move(player, keyPress, level);
+      }
     }
   }
 
@@ -164,7 +165,7 @@ class Game {
    * @param {Level} l - Current level object
    */
   initializeActors(l: Level): void {
-    console.log("initializing actors")
+    console.log("initializing actors");
     for (let row = 0; row < l.levelPlan.length; row++) {
       for (let col = 0; col < l.levelPlan[row].length; col++) {
         const currItem = l.levelPlan[row][col];
@@ -221,6 +222,7 @@ class Game {
         const gridItem = document.createElement("div");
 
         gridItem.className = `${charMap[currItem]} h-5 w-5 xs:h-7 xs:w-7 sm:w-9 sm:h-9 md:w-11 md:h-11 lg:w-14 lg:h-14  flex justify-center items-center`;
+        gridItem.id = `cell-${row}-${col}`;
 
         // const char = document.createElement("span");
         // char.textContent = currItem;
@@ -239,7 +241,6 @@ class Game {
 }
 
 const game1 = new Game("microcosmos.txt");
-
 document.getElementById("reset-btn")!.addEventListener("click", () => console.log("reset..."));
 
 // setupCounter(document.querySelector<HTMLButtonElement>("#counter")!);
