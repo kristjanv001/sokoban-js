@@ -1,31 +1,105 @@
 import "./style.css";
 // import { setupGame } from "./game";
 // document.getElementById("game")!.innerHTML = `<div class="h-full"></div>`;
+//
+
+type Position = [number, number];
 
 const charMap: { [key: string]: string } = {
-  "#": "bg-gray-400", // wall
-  "@": "bg-blue-200 rounded-full", // player
-  "+": "bg-blue-200 rounded-full", // player on goal
-  $: "bg-yellow-900", // box
-  "*": "bg-yellow-300", // box on goal
-  ".": "bg-green-600", // goal
-  " ": "bg-stone-300", // floor
+  "#": "bg-gray-500 border-8 border-gray-600", // wall
+  "@": "bg-blue-700 rounded-full scale-75", // player
+  "+": "bg-blue-700 rounded-full scale-75", // player on goal
+  $: "bg-yellow-700 border-8 border-yellow-800", // box
+  "*": "bg-green-600 border-8 border-green-700", // box on goal
+  ".": "bg-yellow-400 border-8 border-yellow-500 rounded-full scale-50", // goal
+  " ": "bg-stone-400", // floor
 };
 
+class Movement {
+  static move(pos: Position, direction: string, level: Level) {
+    let [newRow, newCol] = pos;
+
+    switch (direction) {
+      case "up":
+        newRow -= 1;
+        break;
+      case "down":
+        newRow += 1;
+        break;
+      case "left":
+        newCol -= 1;
+        break;
+      case "right":
+        newCol += 1;
+        break;
+    }
+
+    const newPos: Position = [newRow, newCol];
+    if (this.isValidMove(newPos, level)) {
+      // update the thing's position
+      console.log("updating position in level: ", level)
+    }
+  }
+
+  static isValidMove(newPos: Position, level: Level): boolean {
+    console.log("validating level: ", level, " with a new position of: ", newPos)
+    return true;
+  }
+}
+
+class Player {
+  position: Position;
+  moves = 0;
+
+  constructor(position: Position) {
+    this.position = position;
+  }
+
+  move(direction: string, level: Level) {
+    console.log("moving player...")
+    Movement.move(this.position, direction, level);
+  }
+}
+
+class Box {
+  position: Position;
+  onGoal = false;
+
+  constructor(position: Position, onGoal: boolean) {
+    this.position = position;
+    this.onGoal = onGoal;
+  }
+
+  // move(direction: string) {
+  //   Movement.move(this.position, direction);
+  // }
+}
+
+class Goal {
+  position: Position;
+
+  constructor(position: Position) {
+    this.position = position;
+  }
+}
+
 class Level {
+  player: Player | null = null;
+  boxes: Box[] = [];
+  goals: Goal[] = [];
   levelNum: number;
   levelPlan: string[][];
+  completed = false;
 
-  constructor(levelPlan: string, levelNum: number) {
-    this.levelPlan = levelPlan.split("\n").map((row) => [...row]);
+  constructor(levelPlan: string[][], levelNum: number) {
+    this.levelPlan = levelPlan;
     this.levelNum = levelNum;
   }
 }
 
 class Game {
-  currentLevel: number = 1;
-  moves: number = 0;
-  playerPos: any;
+  startLevel = 1;
+  currentLevel = this.startLevel;
   levels: Level[] = [];
 
   constructor(levelsFile: string) {
@@ -35,13 +109,32 @@ class Game {
   async setupGame(levelsFile: string): Promise<void> {
     try {
       this.levels = await this.parseLevelsFile(levelsFile);
-      this.loadLevel(this.levels[1])
+      this.createLevel(this.levels[this.startLevel - 1], "game");
+
+      // TODO: Refactor
+      const levels = this.levels
+      const currentLevel = this.currentLevel - 1
+
+      document.body.addEventListener("keydown", function (event) {
+        const keyPress = event.code;
+        if (["ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp"].includes(keyPress)) {
+          // console.log(keyPress);
+          // console.log(levels[currentLevel])
+          levels[currentLevel].player?.move("right", levels[currentLevel])
+        }
+      });
+      // ===========
 
     } catch (error) {
       console.error("Error setting up game:", error);
     }
   }
 
+  /**
+   * Parses a txt file that contains the levels in a specific format. See: http://www.sokobano.de/wiki/index.php?title=Level_format
+   * Levels are separated by an empty line
+   * @param {string} levelsFile - The file name of the text file containing the levels.
+   */
   async parseLevelsFile(levelsFile: string): Promise<Level[]> {
     try {
       const response = await fetch(levelsFile);
@@ -50,11 +143,14 @@ class Game {
 
       return levelsSections.map((section) => {
         const lines = section.split("\n");
-        const levelNum = parseInt(lines[0].replace("Level", "").trim());
-        const levelPlanLines = lines.slice(1).filter((line) => /^[ #]/.test(line));
-        const levelPlan = levelPlanLines.join("\n");
 
-        return new Level(levelPlan, levelNum);
+        const levelNum = parseInt(lines[0].replace("Level", "").trim());
+        const levelPlanLines = lines
+          .slice(1)
+          .filter((line) => /^[ #]/.test(line))
+          .map((line) => line.split(""));
+
+        return new Level(levelPlanLines, levelNum);
       });
     } catch (error) {
       console.error("Error parsing levels:", error);
@@ -63,25 +159,72 @@ class Game {
     }
   }
 
-  loadLevel(l: Level) {
-    const level = l.levelPlan;
+  /**
+   * Iterates over the level plan and finds all 'moving' parts such as boxes, goals and the player.
+   * @param {Level} l - Current level object
+   */
+  initializeActors(l: Level): void {
+    console.log("initializing actors")
+    for (let row = 0; row < l.levelPlan.length; row++) {
+      for (let col = 0; col < l.levelPlan[row].length; col++) {
+        const currItem = l.levelPlan[row][col];
 
-    const gameContainer = document.getElementById("game")!;
+        switch (currItem) {
+          case "@": // player
+            l.player = new Player([row, col]);
+            break;
+          case "+": // player on goal
+            l.player = new Player([row, col]);
+            break;
+          case "$": // box
+            l.boxes.push(new Box([row, col], false));
+            break;
+          case "*": // box on goal
+            l.boxes.push(new Box([row, col], true));
+            l.goals.push(new Goal([row, col]));
+            break;
+          case ".": // goal
+            l.goals.push(new Goal([row, col]));
+            break;
+        }
+      }
+    }
+  }
+
+  /**
+   * Generates HTML of the level grid and adds it to the DOM.
+   * @param {Level} l - Level object.
+   * @param {string} id - Id of the HTML element where to append the whole game grid.
+   */
+  createLevel(l: Level, id: string) {
+    const gameContainer = document.getElementById(id);
+
+    if (!gameContainer) {
+      console.error(`element with an id of '${id}' not found.`);
+
+      return;
+    }
+
+    this.initializeActors(l);
+
+    gameContainer.innerHTML = "";
+
     const board = document.createElement("div");
     board.className = "grid justify-center";
 
-    for (let row = 0; row < level.length; row++) {
+    for (let row = 0; row < l.levelPlan.length; row++) {
       const rowElem = document.createElement("div");
       rowElem.className = "flex";
 
-      for (let col = 0; col < level[row].length; col++) {
-        const currItem = level[row][col];
+      for (let col = 0; col < l.levelPlan[row].length; col++) {
+        const currItem = l.levelPlan[row][col];
         const gridItem = document.createElement("div");
+
         gridItem.className = `${charMap[currItem]} h-5 w-5 xs:h-7 xs:w-7 sm:w-9 sm:h-9 md:w-11 md:h-11 lg:w-14 lg:h-14  flex justify-center items-center`;
 
-        const char = document.createElement("span");
-        char.textContent = currItem;
-        gridItem.appendChild(char);
+        // const char = document.createElement("span");
+        // char.textContent = currItem;
+        // gridItem.appendChild(char);
 
         rowElem.appendChild(gridItem);
       }
@@ -90,12 +233,12 @@ class Game {
     }
 
     gameContainer.appendChild(board);
+
+    console.log(l);
   }
 }
 
-
-const game1 = new Game("levels.txt")
-
+const game1 = new Game("microcosmos.txt");
 
 document.getElementById("reset-btn")!.addEventListener("click", () => console.log("reset..."));
 

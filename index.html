@@ -7,15 +7,17 @@
     <title>Sokoban Game</title>
     <script type="module" src="/src/main.ts"></script>
   </head>
-  <body class="relative min-h-screen bg-slate-100" style="height: calc(var(--vh, 1vh) * 100);">
-    <header class="h-[70px] flex justify-center items-center">
+  <body class="relative min-h-screen bg-slate-100" style="height: calc(var(--vh, 1vh) * 100)">
+    <header class="flex h-[70px] items-center justify-center">
       <h1 class="text-3xl font-bold">Sokoban 📦</h1>
     </header>
-    <main class="relative bg-stone-300 flex flex-col justify-center place-items-center" style="height: calc(100vh - 144px - 70px);">
+    <main
+      class="relative flex flex-col place-items-center justify-center bg-stone-400"
+      style="height: calc(100vh - 144px - 70px)"
+    >
       <div id="game"></div>
-      <pre id="fileContent"></pre>
     </main>
-    <aside class="bg-slate-100 h-[144px] sticky top-[100vh] flex flex-col justify-center px-4">
+    <aside class="sticky top-[100vh] flex h-[144px] flex-col justify-center bg-slate-100 px-4">
       <p>Level: 1</p>
       <p>Time: 0s</p>
       <p>Steps: 0</p>
