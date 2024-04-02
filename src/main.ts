@@ -5,7 +5,7 @@ import "./style.css";
 
 type Position = [number, number];
 
-const defaultGridStyles = "h-9 w-9 xs:h-12 xs:w-12 sm:w-14 sm:h-14 md:w-18 md:h-18 flex justify-center items-center"
+const defaultGridStyles = "h-9 w-9 xs:h-12 xs:w-12 sm:w-14 sm:h-14 md:w-18 md:h-18 flex justify-center items-center";
 
 const charMap: { [key: string]: string } = {
   // WALL
@@ -175,40 +175,56 @@ class Game {
     }
   }
 
+  isInBounds(newPos: Position, grid: string[][]) {
+    console.log(newPos);
+    return newPos[0] >= 0 && newPos[0] < grid.length && newPos[1] >= 0 && newPos[1] < grid[0].length;
+  }
+
   /**
    * TODO
    * Renders moving parts such as the player and boxes.
    * @param {Level} l - Current level object
    */
   render(l: Level): void {
+    const updateCellClass = (position: Position, charKey: string) => {
+      const cell = document.getElementById(`cell-${position[0]}-${position[1]}`);
+
+      if (charKey === " ") {
+        if (this.isInBounds(position, l.levelPlan)) {
+          console.log("should clean up")
+          const cell = document.getElementById(`cell-${position[0]}-${position[1]}`);
+          if (cell && l.levelPlan[position[0]][position[1]] === " ") {
+            cell.className = `${defaultGridStyles} ${charMap[charKey]}`;
+          }
+        }
+      } else {
+        if (cell) {
+          cell.className = `${defaultGridStyles} ${charMap[charKey]}`;
+        }
+      }
+    };
+
     if (!l.player) {
       return;
     }
 
-    console.log(l.player!.pos);
+    // re-render player
+    updateCellClass(l.player.pos, "@"); // set new pos
+    const directions = [
+      [-1, 0],
+      [0, 1],
+      [1, 0],
+      [0, -1],
+    ]; // up, right, down, left
 
+    directions.forEach((dir) => {
+      const newPos: Position = [l.player!.pos[0] + dir[0], l.player!.pos[1] + dir[1]];
+      updateCellClass(newPos, " ");
+    });
 
-    for (let row = 0; row < l.levelPlan.length; row++) {
-      for (let col = 0; col < l.levelPlan[row].length; col++) {
-        const currItem = l.levelPlan[row][col];
-
-        if (currItem === "@" || currItem === " ") {
-          document.getElementById(`cell-${row}-${col}`)!.className = defaultGridStyles
-        }
-      }
-
-    }
-
-    l.goals.forEach((goal) => {
-      const cell = document.getElementById(`cell-${goal.position[0]}-${goal.position[1]}`)
-      cell!.className = `${defaultGridStyles} ${charMap['.']}`
-    })
-
-
-    const newCell = document.getElementById(`cell-${l.player!.pos[0]}-${l.player!.pos[1]}`);
-    newCell!.className = `${defaultGridStyles} ${charMap['@']}`
-
-
+    // re-render goals, boxes
+    // l.goals.forEach((goal) => updateCellClass(goal.position, "."));
+    // l.boxes.forEach((box) => (box.onGoal ? updateCellClass(box.position, "*") : updateCellClass(box.position, "$")));
   }
 
   /**
