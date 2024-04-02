@@ -5,6 +5,8 @@ import "./style.css";
 
 type Position = [number, number];
 
+const defaultGridStyles = "h-9 w-9 xs:h-12 xs:w-12 sm:w-14 sm:h-14 md:w-18 md:h-18 flex justify-center items-center"
+
 const charMap: { [key: string]: string } = {
   // WALL
   "#": "bg-gray-500 border-8 border-gray-600 rounded-md scale-[0.98]",
@@ -174,11 +176,39 @@ class Game {
   }
 
   /**
+   * TODO
    * Renders moving parts such as the player and boxes.
    * @param {Level} l - Current level object
    */
   render(l: Level): void {
-    console.log(l);
+    if (!l.player) {
+      return;
+    }
+
+    console.log(l.player!.pos);
+
+
+    for (let row = 0; row < l.levelPlan.length; row++) {
+      for (let col = 0; col < l.levelPlan[row].length; col++) {
+        const currItem = l.levelPlan[row][col];
+
+        if (currItem === "@" || currItem === " ") {
+          document.getElementById(`cell-${row}-${col}`)!.className = defaultGridStyles
+        }
+      }
+
+    }
+
+    l.goals.forEach((goal) => {
+      const cell = document.getElementById(`cell-${goal.position[0]}-${goal.position[1]}`)
+      cell!.className = `${defaultGridStyles} ${charMap['.']}`
+    })
+
+
+    const newCell = document.getElementById(`cell-${l.player!.pos[0]}-${l.player!.pos[1]}`);
+    newCell!.className = `${defaultGridStyles} ${charMap['@']}`
+
+
   }
 
   /**
@@ -215,7 +245,9 @@ class Game {
     }
   }
 
-  // TODO
+  /**
+   * TODO
+   */
   isValidMove(): boolean {
     return true;
   }
@@ -248,7 +280,7 @@ class Game {
 
         const gridItem = document.createElement("div");
 
-        gridItem.className = `${charMap[currItem]} h-5 w-5 xs:h-7 xs:w-7 sm:w-9 sm:h-9 md:w-11 md:h-11 lg:w-14 lg:h-14 xl:w-16 xl:h-16 2xl:w-20 2xl:h-20 flex justify-center items-center`;
+        gridItem.className = `${charMap[currItem]} ${defaultGridStyles}`;
 
         gridItem.id = `cell-${row}-${col}`;
 
