@@ -6,54 +6,21 @@ import "./style.css";
 type Position = [number, number];
 
 const charMap: { [key: string]: string } = {
-  "#": "bg-gray-500 border-8 border-gray-600", // wall
-  "@": "bg-blue-700 rounded-full scale-75", // player
-  "+": "bg-blue-700 rounded-full scale-75", // player on goal
-  $: "bg-yellow-700 border-8 border-yellow-800", // box
-  "*": "bg-green-600 border-8 border-green-700", // box on goal
-  ".": "bg-yellow-400 border-8 border-yellow-500 scale-50 animate-pulse", // goal
-  " ": "bg-stone-400", // floor
+  // WALL
+  "#": "bg-gray-500 border-8 border-gray-600 rounded-md scale-[0.98]",
+  // PLAYER
+  "@": "bg-blue-700 rounded-full scale-75",
+  // PLAYER ON GOAL
+  "+": "bg-blue-700 rounded-full scale-75",
+  // BOX
+  $: "bg-yellow-900 rounded-md scale-[0.85]",
+  // BOX ON GOAL
+  "*": "bg-yellow-700 rounded-md scale-[0.85]",
+  // GOAL
+  ".": "bg-yellow-500 scale-[0.3] rounded-md",
+  // FLOOR
+  " ": "bg-stone-400",
 };
-
-class MovementManager {
-  static move(entity: Player | Box, direction: string, level: Level) {
-    let [newRow, newCol] = entity.position;
-    const [oldRow, oldCol] = entity.position;
-
-    switch (direction) {
-      case "ArrowUp":
-        newRow -= 1;
-        break;
-      case "ArrowDown":
-        newRow += 1;
-        break;
-      case "ArrowLeft":
-        newCol -= 1;
-        break;
-      case "ArrowRight":
-        newCol += 1;
-        break;
-    }
-
-    if (MovementManager.isValidMove()) {
-      const oldCell = document.getElementById(`cell-${oldRow}-${oldCol}`);
-      const newCell = document.getElementById(`cell-${newRow}-${newCol}`);
-
-      console.log(oldCell, newCell);
-
-      oldCell!.classList.remove("rounded-full", "bg-blue-700", "scale-75");
-
-      newCell!.classList.remove("bg-stone-400");
-      newCell!.classList.add("bg-blue-700", "rounded-full", "scale-75");
-
-      entity.position = [newRow, newCol];
-    }
-  }
-
-  static isValidMove(): boolean {
-    return true;
-  }
-}
 
 class Player {
   position: Position;
@@ -61,6 +28,14 @@ class Player {
 
   constructor(position: Position) {
     this.position = position;
+  }
+
+  get pos() {
+    return this.position;
+  }
+
+  set pos(newPos: Position) {
+    this.position = newPos;
   }
 }
 
@@ -97,7 +72,7 @@ class Level {
 }
 
 class Game {
-  startLevel = 1;
+  startLevel = 3;
   currentLevel = this.startLevel;
   levels: Level[] = [];
 
@@ -105,29 +80,34 @@ class Game {
     this.setupGame(levelsFile);
   }
 
+  /**
+   * The most important method after the Game constructor (which calls this method)
+   * @param {string} levelsFile - File name of a txt file that contains level data
+   */
   async setupGame(levelsFile: string): Promise<void> {
     try {
       this.levels = await this.parseLevelsFile(levelsFile);
-      this.createLevel(this.levels[this.startLevel - 1], "game");
-
+      this.createLevel(this.levels[this.currentLevel - 1], "game");
+      this.initializeActors(this.levels[this.currentLevel - 1]);
       document.body.addEventListener("keydown", this.handleKeyDown.bind(this));
     } catch (error) {
       console.error("Error setting up game:", error);
     }
   }
 
+  /**
+   * What happens when the user presses a key?
+   * @param {KeyboardEvent} event - Such as "ArrowUp"
+   */
   handleKeyDown(event: KeyboardEvent): void {
     const keyPress = event.code;
     const currentLevelIndex = this.currentLevel - 1;
-    const allowedMovementKeys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
 
-    if (allowedMovementKeys.includes(keyPress)) {
-      const player = this.levels[currentLevelIndex].player;
+    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(keyPress)) {
       const level = this.levels[currentLevelIndex];
 
-      if (player) {
-        MovementManager.move(player, keyPress, level);
-      }
+      this.move(keyPress, level);
+      this.render(level);
     }
   }
 
@@ -176,6 +156,7 @@ class Game {
             break;
           case "+": // player on goal
             l.player = new Player([row, col]);
+            l.goals.push(new Goal([row, col]));
             break;
           case "$": // box
             l.boxes.push(new Box([row, col], false));
@@ -193,6 +174,53 @@ class Game {
   }
 
   /**
+   * Renders moving parts such as the player and boxes.
+   * @param {Level} l - Current level object
+   */
+  render(l: Level): void {
+    console.log(l);
+  }
+
+  /**
+   * Handles movement logic such as collision detection and updating position state.
+   * @param {string} direction - keyboard event code such as "ArrowUp"
+   * @param {Level} l - Current level object
+   */
+  move(direction: string, l: Level) {
+    console.log("moving...");
+    if (!l.player) {
+      return;
+    }
+
+    let [newRow, newCol] = l.player.pos;
+
+    switch (direction) {
+      case "ArrowUp":
+        newRow -= 1;
+        break;
+      case "ArrowDown":
+        newRow += 1;
+        break;
+      case "ArrowLeft":
+        newCol -= 1;
+        break;
+      case "ArrowRight":
+        newCol += 1;
+        break;
+    }
+
+    if (this.isValidMove()) {
+      l.player.pos = [newRow, newCol];
+      // logic for boxes as well
+    }
+  }
+
+  // TODO
+  isValidMove(): boolean {
+    return true;
+  }
+
+  /**
    * Generates HTML of the level grid and adds it to the DOM.
    * @param {Level} l - Level object.
    * @param {string} id - Id of the HTML element where to append the whole game grid.
@@ -206,12 +234,10 @@ class Game {
       return;
     }
 
-    this.initializeActors(l);
-
     gameContainer.innerHTML = "";
 
     const board = document.createElement("div");
-    board.className = "grid justify-center";
+    // board.className = "";
 
     for (let row = 0; row < l.levelPlan.length; row++) {
       const rowElem = document.createElement("div");
@@ -219,13 +245,16 @@ class Game {
 
       for (let col = 0; col < l.levelPlan[row].length; col++) {
         const currItem = l.levelPlan[row][col];
+
         const gridItem = document.createElement("div");
 
-        gridItem.className = `${charMap[currItem]} h-5 w-5 xs:h-7 xs:w-7 sm:w-9 sm:h-9 md:w-11 md:h-11 lg:w-14 lg:h-14  flex justify-center items-center`;
+        gridItem.className = `${charMap[currItem]} h-5 w-5 xs:h-7 xs:w-7 sm:w-9 sm:h-9 md:w-11 md:h-11 lg:w-14 lg:h-14 xl:w-16 xl:h-16 2xl:w-20 2xl:h-20 flex justify-center items-center`;
+
         gridItem.id = `cell-${row}-${col}`;
 
         // const char = document.createElement("span");
         // char.textContent = currItem;
+        // char.classList.add("");
         // gridItem.appendChild(char);
 
         rowElem.appendChild(gridItem);
@@ -236,7 +265,7 @@ class Game {
 
     gameContainer.appendChild(board);
 
-    console.log(l);
+    console.log("initial level created: ", l);
   }
 }
 
