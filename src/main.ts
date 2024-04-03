@@ -1,7 +1,4 @@
 import "./style.css";
-// import { setupGame } from "./game";
-// document.getElementById("game")!.innerHTML = `<div class="h-full"></div>`;
-//
 
 type Position = [number, number];
 
@@ -9,19 +6,19 @@ const defaultGridStyles = "h-9 w-9 xs:h-12 xs:w-12 sm:w-14 sm:h-14 md:w-18 md:h-
 
 const charMap: { [key: string]: string } = {
   // WALL
-  "#": "bg-gray-500 border-8 border-gray-600 rounded-md scale-[0.98]",
+  "#": "bg-gray-600 border-8 border-gray-700 rounded-md scale-[0.98]",
   // PLAYER
-  "@": "bg-blue-700 rounded-full scale-75",
+  "@": "bg-blue-600 rounded-full scale-75",
   // PLAYER ON GOAL
-  "+": "bg-blue-700 rounded-full scale-75",
+  "+": "bg-blue-600 rounded-full scale-75",
   // BOX
-  $: "bg-yellow-900 rounded-md scale-[0.85]",
+  $: "bg-yellow-800 rounded-md scale-[0.85] border-8 border-yellow-900",
   // BOX ON GOAL
-  "*": "bg-yellow-700 rounded-md scale-[0.85]",
+  "*": "bg-yellow-700 rounded-md scale-[0.85] border-8 border-yellow-600",
   // GOAL
-  ".": "bg-yellow-500 scale-[0.3] rounded-md",
+  ".": "bg-yellow-600 scale-[0.3] rounded-md",
   // FLOOR
-  " ": "bg-stone-400",
+  " ": "bg-gray-900",
 };
 
 class Player {
@@ -59,10 +56,19 @@ class Goal {
   }
 }
 
+class Floor {
+  position: Position;
+
+  constructor(position: Position) {
+    this.position = position;
+  }
+}
+
 class Level {
   player: Player | null = null;
   boxes: Box[] = [];
   goals: Goal[] = [];
+  floors: Floor[] = [];
   levelNum: number;
   levelPlan: string[][];
   completed = false;
@@ -74,7 +80,7 @@ class Level {
 }
 
 class Game {
-  startLevel = 3;
+  startLevel = 1;
   currentLevel = this.startLevel;
   levels: Level[] = [];
 
@@ -89,8 +95,10 @@ class Game {
   async setupGame(levelsFile: string): Promise<void> {
     try {
       this.levels = await this.parseLevelsFile(levelsFile);
-      this.createLevel(this.levels[this.currentLevel - 1], "game");
-      this.initializeActors(this.levels[this.currentLevel - 1]);
+      const lvl = this.levels[this.currentLevel - 1];
+
+      this.createLevel(lvl, "game");
+      this.initializeElements(lvl);
       document.body.addEventListener("keydown", this.handleKeyDown.bind(this));
     } catch (error) {
       console.error("Error setting up game:", error);
@@ -108,8 +116,11 @@ class Game {
     if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(keyPress)) {
       const level = this.levels[currentLevelIndex];
 
-      this.move(keyPress, level);
-      this.render(level);
+      const moveSuccessful = this.movePlayer(keyPress, level);
+
+      if (moveSuccessful) {
+        this.render(level); // pass in also the direction?
+      }
     }
   }
 
@@ -146,8 +157,8 @@ class Game {
    * Iterates over the level plan and finds all 'moving' parts such as boxes, goals and the player.
    * @param {Level} l - Current level object
    */
-  initializeActors(l: Level): void {
-    console.log("initializing actors");
+  initializeElements(l: Level): void {
+    // console.log("initializing actors");
     for (let row = 0; row < l.levelPlan.length; row++) {
       for (let col = 0; col < l.levelPlan[row].length; col++) {
         const currItem = l.levelPlan[row][col];
@@ -155,6 +166,7 @@ class Game {
         switch (currItem) {
           case "@": // player
             l.player = new Player([row, col]);
+            l.floors.push(new Floor([row, col])); // player stands on a floor
             break;
           case "+": // player on goal
             l.player = new Player([row, col]);
@@ -170,37 +182,32 @@ class Game {
           case ".": // goal
             l.goals.push(new Goal([row, col]));
             break;
+          case " ": // floor
+            l.floors.push(new Floor([row, col]));
+            break;
         }
       }
     }
   }
 
-  isInBounds(newPos: Position, grid: string[][]) {
-    console.log(newPos);
-    return newPos[0] >= 0 && newPos[0] < grid.length && newPos[1] >= 0 && newPos[1] < grid[0].length;
-  }
-
   /**
-   * TODO
    * Renders moving parts such as the player and boxes.
    * @param {Level} l - Current level object
    */
   render(l: Level): void {
-    const updateCellClass = (position: Position, charKey: string) => {
-      const cell = document.getElementById(`cell-${position[0]}-${position[1]}`);
+    /**
+     * Re-writes the cell styles
+     * @param {Position} newPos - [row, col] of the cell (HTML element) we want to update.
+     * Every grid cell (HTML element) has a id of "cell-<row>-<col>" attached to it.
+     * @param {string} charKey - Which' element styles we want to give the cell.
+     */
+    const updateCell = (newPos: Position, charKey: string) => {
+      console.log("player moved to pos: ", newPos);
+      // grab the cell we want to update
+      const cell = document.getElementById(`cell-${newPos[0]}-${newPos[1]}`);
 
-      if (charKey === " ") {
-        if (this.isInBounds(position, l.levelPlan)) {
-          console.log("should clean up")
-          const cell = document.getElementById(`cell-${position[0]}-${position[1]}`);
-          if (cell && l.levelPlan[position[0]][position[1]] === " ") {
-            cell.className = `${defaultGridStyles} ${charMap[charKey]}`;
-          }
-        }
-      } else {
-        if (cell) {
-          cell.className = `${defaultGridStyles} ${charMap[charKey]}`;
-        }
+      if (cell) {
+        cell.className = `${defaultGridStyles} ${charMap[charKey]}`;
       }
     };
 
@@ -208,23 +215,13 @@ class Game {
       return;
     }
 
+    // re-render goals, boxes, floors
+    l.goals.forEach((goal) => updateCell(goal.position, "."));
+    l.boxes.forEach((box) => (box.onGoal ? updateCell(box.position, "*") : updateCell(box.position, "$")));
+    l.floors.forEach((floor) => updateCell(floor.position, " "));
+
     // re-render player
-    updateCellClass(l.player.pos, "@"); // set new pos
-    const directions = [
-      [-1, 0],
-      [0, 1],
-      [1, 0],
-      [0, -1],
-    ]; // up, right, down, left
-
-    directions.forEach((dir) => {
-      const newPos: Position = [l.player!.pos[0] + dir[0], l.player!.pos[1] + dir[1]];
-      updateCellClass(newPos, " ");
-    });
-
-    // re-render goals, boxes
-    // l.goals.forEach((goal) => updateCellClass(goal.position, "."));
-    // l.boxes.forEach((box) => (box.onGoal ? updateCellClass(box.position, "*") : updateCellClass(box.position, "$")));
+    updateCell(l.player.pos, "@"); // set new pos
   }
 
   /**
@@ -232,10 +229,11 @@ class Game {
    * @param {string} direction - keyboard event code such as "ArrowUp"
    * @param {Level} l - Current level object
    */
-  move(direction: string, l: Level) {
-    console.log("moving...");
+  movePlayer(direction: string, l: Level): boolean {
+    // console.log("moving...");
+
     if (!l.player) {
-      return;
+      return false;
     }
 
     let [newRow, newCol] = l.player.pos;
@@ -258,7 +256,11 @@ class Game {
     if (this.isValidMove()) {
       l.player.pos = [newRow, newCol];
       // logic for boxes as well
+
+      return true;
     }
+
+    return false;
   }
 
   /**
@@ -266,6 +268,8 @@ class Game {
    */
   isValidMove(): boolean {
     return true;
+
+    //  return newPos[0] >= 0 && newPos[0] < grid.length && newPos[1] >= 0 && newPos[1] < grid[0].length;
   }
 
   /**
@@ -300,11 +304,6 @@ class Game {
 
         gridItem.id = `cell-${row}-${col}`;
 
-        // const char = document.createElement("span");
-        // char.textContent = currItem;
-        // char.classList.add("");
-        // gridItem.appendChild(char);
-
         rowElem.appendChild(gridItem);
       }
 
@@ -317,11 +316,4 @@ class Game {
   }
 }
 
-const game1 = new Game("microcosmos.txt");
-document.getElementById("reset-btn")!.addEventListener("click", () => console.log("reset..."));
-
-// setupCounter(document.querySelector<HTMLButtonElement>("#counter")!);
-// <button id="counter" type="button"></button>
-
-let vh = window.innerHeight * 0.01;
-document.documentElement.style.setProperty("--vh", `${vh}`);
+new Game("microcosmos.txt");
