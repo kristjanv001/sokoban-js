@@ -3,7 +3,6 @@ import "./style.css";
 type Position = [number, number];
 
 const defaultGridStyles = "h-9 w-9 xs:h-12 xs:w-12 sm:w-14 sm:h-14 md:w-18 md:h-18 flex justify-center items-center";
-
 const charMap: { [key: string]: string } = {
   // WALL
   "#": "bg-gray-600 border-8 border-gray-700 rounded-md scale-[0.98]",
@@ -65,7 +64,7 @@ class Floor {
 }
 
 class Level {
-  player: Player | null = null;
+  player!: Player;
   boxes: Box[] = [];
   goals: Goal[] = [];
   floors: Floor[] = [];
@@ -76,6 +75,43 @@ class Level {
   constructor(levelPlan: string[][], levelNum: number) {
     this.levelPlan = levelPlan;
     this.levelNum = levelNum;
+    this.initializeElements();
+  }
+
+  /**
+   * Iterates over the level plan and finds all 'moving' parts such as boxes, goals and the player.
+   */
+  initializeElements(): void {
+    // console.log("initializing actors");
+    for (let row = 0; row < this.levelPlan.length; row++) {
+      for (let col = 0; col < this.levelPlan[row].length; col++) {
+        const currItem = this.levelPlan[row][col];
+
+        switch (currItem) {
+          case "@": // player
+            this.player = new Player([row, col]);
+            this.floors.push(new Floor([row, col])); // player stands on a floor
+            break;
+          case "+": // player on goal
+            this.player = new Player([row, col]);
+            this.goals.push(new Goal([row, col]));
+            break;
+          case "$": // box
+            this.boxes.push(new Box([row, col], false));
+            break;
+          case "*": // box on goal
+            this.boxes.push(new Box([row, col], true));
+            // this.goals.push(new Goal([row, col]));
+            break;
+          case ".": // goal
+            this.goals.push(new Goal([row, col]));
+            break;
+          case " ": // floor
+            this.floors.push(new Floor([row, col]));
+            break;
+        }
+      }
+    }
   }
 }
 
@@ -96,9 +132,8 @@ class Game {
     try {
       this.levels = await this.parseLevelsFile(levelsFile);
       const lvl = this.levels[this.currentLevel - 1];
-
+      // loadLevel() --> createLevel()
       this.createLevel(lvl, "game");
-      this.initializeElements(lvl);
       document.body.addEventListener("keydown", this.handleKeyDown.bind(this));
     } catch (error) {
       console.error("Error setting up game:", error);
@@ -154,43 +189,6 @@ class Game {
   }
 
   /**
-   * Iterates over the level plan and finds all 'moving' parts such as boxes, goals and the player.
-   * @param {Level} l - Current level object
-   */
-  initializeElements(l: Level): void {
-    // console.log("initializing actors");
-    for (let row = 0; row < l.levelPlan.length; row++) {
-      for (let col = 0; col < l.levelPlan[row].length; col++) {
-        const currItem = l.levelPlan[row][col];
-
-        switch (currItem) {
-          case "@": // player
-            l.player = new Player([row, col]);
-            l.floors.push(new Floor([row, col])); // player stands on a floor
-            break;
-          case "+": // player on goal
-            l.player = new Player([row, col]);
-            l.goals.push(new Goal([row, col]));
-            break;
-          case "$": // box
-            l.boxes.push(new Box([row, col], false));
-            break;
-          case "*": // box on goal
-            l.boxes.push(new Box([row, col], true));
-            l.goals.push(new Goal([row, col]));
-            break;
-          case ".": // goal
-            l.goals.push(new Goal([row, col]));
-            break;
-          case " ": // floor
-            l.floors.push(new Floor([row, col]));
-            break;
-        }
-      }
-    }
-  }
-
-  /**
    * Renders moving parts such as the player and boxes.
    * @param {Level} l - Current level object
    */
@@ -202,7 +200,6 @@ class Game {
      * @param {string} charKey - Which' element styles we want to give the cell.
      */
     const updateCell = (newPos: Position, charKey: string) => {
-      console.log("player moved to pos: ", newPos);
       // grab the cell we want to update
       const cell = document.getElementById(`cell-${newPos[0]}-${newPos[1]}`);
 
@@ -215,12 +212,11 @@ class Game {
       return;
     }
 
-    // re-render goals, boxes, floors
+    // ⚠️ only render boxes/goals if there's interaction with them
+
     l.goals.forEach((goal) => updateCell(goal.position, "."));
     l.boxes.forEach((box) => (box.onGoal ? updateCell(box.position, "*") : updateCell(box.position, "$")));
     l.floors.forEach((floor) => updateCell(floor.position, " "));
-
-    // re-render player
     updateCell(l.player.pos, "@"); // set new pos
   }
 
@@ -253,7 +249,7 @@ class Game {
         break;
     }
 
-    if (this.isValidMove()) {
+    if (this.isValidMove(l, [newRow, newCol])) {
       l.player.pos = [newRow, newCol];
       // logic for boxes as well
 
@@ -264,12 +260,31 @@ class Game {
   }
 
   /**
-   * TODO
+   * Checks for the requested move's validity. Can't move over boxes and through walls.
+   * Checks if box can be pushed
    */
-  isValidMove(): boolean {
-    return true;
+  isValidMove(l: Level, newPos: Position): boolean {
+    const [row, col] = newPos;
 
-    //  return newPos[0] >= 0 && newPos[0] < grid.length && newPos[1] >= 0 && newPos[1] < grid[0].length;
+    // use the original level plan to detect a wall
+    if (l.levelPlan[row][col] === "#") {
+      return false;
+    }
+
+    // check for a box
+    const isBox = l.boxes.some((box) => {
+      const [boxRow, boxCol] = box.position;
+
+      return row === boxRow && col === boxCol;
+    });
+
+    if (isBox) {
+
+
+      return false;
+    }
+
+    return true;
   }
 
   /**
@@ -299,9 +314,7 @@ class Game {
         const currItem = l.levelPlan[row][col];
 
         const gridItem = document.createElement("div");
-
         gridItem.className = `${charMap[currItem]} ${defaultGridStyles}`;
-
         gridItem.id = `cell-${row}-${col}`;
 
         rowElem.appendChild(gridItem);
