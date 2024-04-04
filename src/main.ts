@@ -171,26 +171,11 @@ class Level {
         break;
     }
 
+    const sym = this.levelPlan[newRow][newCol];
     if (this.isValidMove([newRow, newCol], direction)) {
-      // logic for boxes as well
-
-      if (this.levelPlan[newRow][newCol] === "$" || this.levelPlan[newRow][newCol] === "*") {
-        console.log("moving a box...");
-
-        switch (direction) {
-          case "ArrowUp":
-            break;
-          case "ArrowDown":
-            break;
-          case "ArrowLeft":
-            break;
-          case "ArrowRight":
-            this.levelPlan[newRow][newCol] = ".";
-            this.levelPlan[newRow][newCol + 1] = "$";
-            break;
-        }
+      if (sym === "$" || sym === "*") {
+        this.moveBox(newRow, newCol, direction);
       }
-
       this.player.pos = [newRow, newCol];
 
       return true;
@@ -199,11 +184,42 @@ class Level {
     return false;
   }
 
+  private moveBox(row: number, col: number, direction: string): void {
+    let nextRow = row;
+    let nextCol = col;
+    switch (direction) {
+      case "ArrowUp":
+        console.log("☝️");
+        nextRow--;
+        break;
+      case "ArrowDown":
+        nextRow++;
+        console.log("👇");
+        break;
+      case "ArrowLeft":
+        nextCol--;
+        console.log("👈");
+        break;
+      case "ArrowRight":
+        nextCol++;
+        console.log("👉");
+        break;
+    }
+
+
+    const origCellVal = this.levelPlan[row][col] === "*" ? "." : " ";
+    const nextCellVal = this.levelPlan[nextRow][nextCol] === "." ? "*" : "$";
+
+    this.levelPlan[nextRow][nextCol] = nextCellVal
+    this.levelPlan[row][col] = origCellVal
+
+  }
+
   /**
    * Checks for the requested move's validity. Can't move over boxes and through walls.
    * Checks if box can be pushed
    */
-  isValidMove(newPos: Position, direction: string): boolean {
+  private isValidMove(newPos: Position, direction: string): boolean {
     const [newRow, newCol] = newPos;
 
     // check for a wall
@@ -243,7 +259,7 @@ class Level {
 }
 
 class Game {
-  startLevel = 1;
+  startLevel = 4;
   currentLevel = this.startLevel;
   levels: Level[] = [];
 
@@ -270,7 +286,7 @@ class Game {
         this.handleKeyDown(level, event);
       });
 
-      console.log("all game set up done, current level is: ", level);
+      console.log("all game set up done, current level is: ", level.levelPlan);
     } catch (error) {
       console.error("Error setting up game:", error);
     }
