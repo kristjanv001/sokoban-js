@@ -7,7 +7,7 @@ const charMap: { [key: string]: string } = {
   // WALL
   "#": "bg-gray-600 border-8 border-gray-700 rounded-md scale-[0.98]",
   // PLAYER
-  "@": "bg-blue-600 rounded-full scale-75",
+  "@": "bg-blue-600 rounded-full scale-75 -hue-rotate-60",
   // PLAYER ON GOAL
   "+": "bg-blue-600 rounded-full scale-75",
   // BOX
@@ -116,7 +116,7 @@ class Level {
 }
 
 class Game {
-  startLevel = 1;
+  startLevel = 3;
   currentLevel = this.startLevel;
   levels: Level[] = [];
 
@@ -249,7 +249,7 @@ class Game {
         break;
     }
 
-    if (this.isValidMove(l, [newRow, newCol])) {
+    if (this.isValidMove(l, [newRow, newCol], direction)) {
       l.player.pos = [newRow, newCol];
       // logic for boxes as well
 
@@ -263,7 +263,7 @@ class Game {
    * Checks for the requested move's validity. Can't move over boxes and through walls.
    * Checks if box can be pushed
    */
-  isValidMove(l: Level, newPos: Position): boolean {
+  isValidMove(l: Level, newPos: Position, direction: string): boolean {
     const [row, col] = newPos;
 
     // use the original level plan to detect a wall
@@ -271,17 +271,47 @@ class Game {
       return false;
     }
 
-    // check for a box
-    const isBox = l.boxes.some((box) => {
+    for (const box of l.boxes) {
       const [boxRow, boxCol] = box.position;
 
-      return row === boxRow && col === boxCol;
-    });
+      // check if there's a box where the player wants to move
+      if (row === boxRow && col === boxCol) {
+        let nextRow = boxRow;
+        let nextCol = boxCol;
 
-    if (isBox) {
+        switch (direction) {
+          case "ArrowUp":
+            nextRow--;
+            break;
+          case "ArrowDown":
+            nextRow++;
+            break;
+          case "ArrowLeft":
+            nextCol--;
+            break;
+          case "ArrowRight":
+            nextCol++;
+            break;
+        }
 
+        // check for a wall
+        if (l.levelPlan[nextRow][nextCol] === "#") {
+          return false;
+        }
 
-      return false;
+        // check for another box
+        const isAnotherBox = l.boxes.some((otherBox) => {
+          const [otherBoxRow, otherBoxCol] = otherBox.position;
+
+          return nextRow === otherBoxRow && nextCol === otherBoxCol;
+        });
+
+        if (isAnotherBox) {
+          return false;
+        }
+
+        return true;
+      }
     }
 
     return true;
