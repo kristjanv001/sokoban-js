@@ -17,7 +17,7 @@ const charMap: { [key: string]: string } = {
   // GOAL
   ".": "bg-yellow-600 scale-[0.3] rounded-md",
   // FLOOR
-  " ": "bg-gray-900",
+  " ": "bg-neutral-800",
 };
 
 class Player {
@@ -250,6 +250,13 @@ class Game {
     }
 
     if (this.isValidMove(l, [newRow, newCol], direction)) {
+
+       let boxIndex = l.boxes.findIndex(box => box.position[0] === newRow && box.position[1] === newCol);
+
+       console.log(boxIndex)
+
+
+
       l.player.pos = [newRow, newCol];
       // logic for boxes as well
 
@@ -270,6 +277,7 @@ class Game {
     if (l.levelPlan[row][col] === "#") {
       return false;
     }
+
 
     for (const box of l.boxes) {
       const [boxRow, boxCol] = box.position;

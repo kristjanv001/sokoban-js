@@ -7,12 +7,12 @@
     <title>Sokoban Game</title>
     <script type="module" src="/src/main.ts"></script>
   </head>
-  <body class="relative min-h-screen bg-gray-900 h-screem">
-    <header class="flex h-[70px] items-center justify-center mb-24 text-gray-400">
+  <body class="relative h-screen bg-neutral-900">
+    <header class="flex h-[160px] items-center justify-center text-gray-400 flex-col">
       <h1 class="text-3xl font-bold">Sokoban 📦</h1>
     </header>
-    <main class="relative flex flex-col place-items-center justify-center bg-gray-900 h-full">
-      <div id="game" class="flex h-full w-full items-center justify-center"></div>
+    <main class="relative bg-neutral-900 px-4 md:px-8 h-[calc(100vh-160px)] pb-8">
+      <div id="game" class="flex max-w-[1400px] items-center justify-center rounded-lg bg-neutral-800 h-full"></div>
     </main>
   </body>
 </html>
