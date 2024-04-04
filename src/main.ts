@@ -19,7 +19,7 @@ const charMap: { [key: string]: string } = {
   // FLOOR
   " ": "bg-neutral-800",
   //
-  "9": "bg-red-600"
+  "9": "bg-red-600",
 };
 
 class Player {
@@ -94,20 +94,17 @@ class Level {
       }
     };
 
-
-    let count = 0; // 59 --> 41 --> 27 --> 9
-    for (let row = this.player.pos[0]-1; row <= this.player.pos[0]+1; row++) {
-      for (let col = this.player.pos[1]-1; col <= this.player.pos[1]+1; col++) {
+    for (let row = this.player.pos[0] - 1; row <= this.player.pos[0] + 1; row++) {
+      for (let col = this.player.pos[1] - 1; col <= this.player.pos[1] + 1; col++) {
         const currItem = this.levelPlan[row][col];
 
         const gridItem = document.getElementById(`cell-${row}-${col}`);
         if (gridItem && currItem !== "#") {
-          count++
           gridItem.className = `${charMap[currItem]} ${defaultGridStyles}`;
         }
       }
     }
-    console.log("render...", count)
+
     // set new pos for player
     updateCell(this.player.pos, "@");
   }
@@ -177,6 +174,23 @@ class Level {
     if (this.isValidMove([newRow, newCol], direction)) {
       // logic for boxes as well
 
+      if (this.levelPlan[newRow][newCol] === "$" || this.levelPlan[newRow][newCol] === "*") {
+        console.log("moving a box...");
+
+        switch (direction) {
+          case "ArrowUp":
+            break;
+          case "ArrowDown":
+            break;
+          case "ArrowLeft":
+            break;
+          case "ArrowRight":
+            this.levelPlan[newRow][newCol] = ".";
+            this.levelPlan[newRow][newCol + 1] = "$";
+            break;
+        }
+      }
+
       this.player.pos = [newRow, newCol];
 
       return true;
@@ -190,11 +204,38 @@ class Level {
    * Checks if box can be pushed
    */
   isValidMove(newPos: Position, direction: string): boolean {
-    const [row, col] = newPos;
+    const [newRow, newCol] = newPos;
 
-    // use the original level plan to detect a wall
-    if (this.levelPlan[row][col] === "#") {
+    // check for a wall
+    if (this.levelPlan[newRow][newCol] === "#") {
       return false;
+    }
+
+    let nextRow = newRow;
+    let nextCol = newCol;
+    switch (direction) {
+      case "ArrowUp":
+        nextRow--;
+        break;
+      case "ArrowDown":
+        nextRow++;
+        break;
+      case "ArrowLeft":
+        nextCol--;
+        break;
+      case "ArrowRight":
+        nextCol++;
+        break;
+    }
+
+    // check for a box, user tries to push a box
+    const newCell = this.levelPlan[newRow][newCol];
+    if (newCell === "$" || newCell === "*") {
+      const nextCell = this.levelPlan[nextRow][nextCol];
+      // check for a box/wall behind that box
+      if (nextCell === "$" || nextCell === "#" || nextCell === "*") {
+        return false;
+      }
     }
 
     return true;
