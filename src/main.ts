@@ -42,12 +42,10 @@ class Level {
   player!: Player;
   levelNum: number;
   levelPlan: string[][];
-  moves: number;
 
   constructor(levelPlan: string[][], levelNum: number) {
     this.levelPlan = levelPlan;
     this.levelNum = levelNum;
-    this.moves = 0;
   }
 
   /**
@@ -146,7 +144,7 @@ class Level {
 
     gameContainer.appendChild(board);
 
-    console.log("initial level drawn to the screen");
+    console.log(this.levelPlan)
   }
 
   /**
@@ -189,30 +187,24 @@ class Level {
     let nextCol = col;
     switch (direction) {
       case "ArrowUp":
-        console.log("☝️");
         nextRow--;
         break;
       case "ArrowDown":
         nextRow++;
-        console.log("👇");
         break;
       case "ArrowLeft":
         nextCol--;
-        console.log("👈");
         break;
       case "ArrowRight":
         nextCol++;
-        console.log("👉");
         break;
     }
-
 
     const origCellVal = this.levelPlan[row][col] === "*" ? "." : " ";
     const nextCellVal = this.levelPlan[nextRow][nextCol] === "." ? "*" : "$";
 
-    this.levelPlan[nextRow][nextCol] = nextCellVal
-    this.levelPlan[row][col] = origCellVal
-
+    this.levelPlan[nextRow][nextCol] = nextCellVal;
+    this.levelPlan[row][col] = origCellVal;
   }
 
   /**
@@ -256,10 +248,18 @@ class Level {
 
     return true;
   }
+
+  /**
+   * Checks if the level has been completed or not.
+   * Level is completed when all the boxes are on goals.
+   */
+  isCompleted(): boolean {
+    return !this.levelPlan.some((row) => row.includes("$"));
+  }
 }
 
 class Game {
-  startLevel = 4;
+  startLevel = 1;
   currentLevel = this.startLevel;
   levels: Level[] = [];
 
@@ -285,8 +285,6 @@ class Game {
       document.body.addEventListener("keydown", (event) => {
         this.handleKeyDown(level, event);
       });
-
-      console.log("all game set up done, current level is: ", level.levelPlan);
     } catch (error) {
       console.error("Error setting up game:", error);
     }
@@ -299,7 +297,7 @@ class Game {
    * @param {Level} level - Level obj
    * @param {KeyboardEvent} event - Such as "ArrowUp"
    */
-  handleKeyDown(level: Level, event: KeyboardEvent): void {
+  handleKeyDown(level: Level, event: KeyboardEvent): void { // ⚠️ wh does it get a level????
     const keyPress = event.code;
 
     if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(keyPress)) {
@@ -307,6 +305,20 @@ class Game {
 
       if (moveSuccessful) {
         level.render();
+        console.log("level: ", this.currentLevel)
+
+        const isCompleted = level.isCompleted();
+
+        if (isCompleted) {
+          setTimeout(() => {
+            // levelCompleted() method
+            window.alert("Level complete! 🎉");
+            this.currentLevel++;
+
+            const nextLevel = this.levels[this.currentLevel - 1];
+            this.loadLevel(nextLevel);
+          }, 400);
+        }
       }
     }
   }
@@ -339,6 +351,17 @@ class Game {
       return [];
     }
   }
+
+  loadLevel(level: Level) {
+    console.log("next level loaded...");
+
+    level.initializePlayer();
+    level.draw("game");
+    level.render();
+
+    console.log("loaded level: ", level)
+
+  }
 }
 
-new Game("microcosmos.txt");
+new Game("pickedlevels.txt");
