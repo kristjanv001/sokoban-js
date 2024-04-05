@@ -257,13 +257,6 @@ class Level {
   isCompleted(): boolean {
     return !this.levelPlan.some((row) => row.includes("$"));
   }
-
-  complete(cbs: (() => void)[]) {
-    setTimeout(() => {
-      window.alert(`Level ${this.levelNum} complete! 🎉`);
-      cbs.forEach((cb) => cb());
-    }, 400);
-  }
 }
 
 class Game {
@@ -307,6 +300,7 @@ class Game {
       document.body.addEventListener("keydown", (event) => {
         this.handleKeyDown(event);
       });
+
     } catch (error) {
       console.error("Error setting up game:", error);
     }
@@ -319,23 +313,37 @@ class Game {
    * @param {KeyboardEvent} event - Such as "ArrowUp"
    */
   handleKeyDown(event: KeyboardEvent): void {
-    const level = this.getCurrentLevel();
-
-    if (this.isMovementKey(event.code)) {
-      const moveSuccessful = level.movePlayer(event.code);
-      if (moveSuccessful) {
-        level.render();
-        if (level.isCompleted()) {
-          if (this.isGameWon()) {
-            this.winGame([() => alert("cb fires")]);
-          } else {
-            this.incrementLevelNum();
-            const nextLevel = this.getCurrentLevel();
-            level.complete([() => this.loadLevel(nextLevel), () => this.renderLevelDisplayNum()]);
-          }
-        }
-      }
+    if (!this.isMovementKey(event.code)) {
+      return;
     }
+
+    const level = this.getCurrentLevel();
+    const moveSuccessful = level.movePlayer(event.code);
+
+    if (!moveSuccessful) {
+      return;
+    }
+
+    level.render();
+
+    if (level.isCompleted()) {
+      this.processLevelCompletion();
+    }
+  }
+
+  processLevelCompletion() {
+    if (this.isGameCompleted()) {
+      this.completeGame();
+      return;
+    } else {
+      this.prepareNextLevel();
+    }
+  }
+
+  prepareNextLevel() {
+    this.incrementLevelNum();
+    const nextLevel = this.getCurrentLevel();
+    this.completeLevel([() => this.loadLevel(nextLevel), () => this.renderLevelDisplayNum()]);
   }
 
   private isMovementKey(keyPress: string): boolean {
@@ -386,19 +394,39 @@ class Game {
     }
   }
 
-  isGameWon() {
-    console.log("this.getCurrentLevelNum(): ", this.getCurrentLevelNum(), " this.levels.length - 1: ", this.levels.length - 1);
+  isGameCompleted() {
     if (this.currentLevelIndex === this.levels.length - 1) {
       return true;
     }
     return false;
   }
 
-  winGame(cbs: (() => void)[]) {
+  completeGame() {
     setTimeout(() => {
-      window.alert("You won the entire game 🎉");
+      // window.alert("You won the entire game 🎉");
+      this.renderCompletionDisplay()
+      // cbs.forEach((cb) => cb());
+    }, 400);
+  }
+
+  completeLevel(cbs: (() => void)[]) {
+    setTimeout(() => {
+      window.alert(`Level ${this.getCurrentLevelNum() - 1} complete! 🎉`);
       cbs.forEach((cb) => cb());
     }, 400);
+  }
+
+  renderCompletionDisplay() {
+    const board = document.getElementById("board");
+    board?.remove();
+
+    const endMsg = document.createElement("h2");
+    endMsg.textContent = "Congratulations, you completed the entire game ✨";
+    endMsg.className = "text-3xl text-neutral-400"
+
+
+
+    document.getElementById("game")?.appendChild(endMsg);
   }
 }
 
