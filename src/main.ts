@@ -3,7 +3,7 @@ import autoAnimate from "@formkit/auto-animate"
 
 type Position = [number, number];
 
-const defaultGridStyles = "h-9 w-9 xs:h-12 xs:w-12 sm:w-14 sm:h-14 md:w-18 md:h-18 flex justify-center items-center";
+const defaultGridStyles = "h-8 w-8 xs:h-12 xs:w-12 sm:w-14 sm:h-14 md:w-18 md:h-18 flex justify-center items-center";
 const charMap: { [key: string]: string } = {
   // WALL
   "#": "bg-gray-600 border-8 border-gray-700 rounded-md scale-[0.98]",
@@ -130,6 +130,7 @@ class Level {
 
     const board = document.createElement("div");
     board.id = "board";
+
 
     for (let row = 0; row < this.levelPlan.length; row++) {
       const rowElem = document.createElement("div");
