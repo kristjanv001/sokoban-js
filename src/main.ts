@@ -112,6 +112,11 @@ class Level {
    * @param {string} id - Id of the HTML element where to draw the level grid.
    */
   draw(id: string) {
+    const prevBoard = document.getElementById("board");
+    if (prevBoard) {
+      prevBoard.remove();
+    }
+
     const gameContainer = document.getElementById(id);
 
     if (!gameContainer) {
@@ -120,10 +125,8 @@ class Level {
       return;
     }
 
-    gameContainer.innerHTML = "";
-
     const board = document.createElement("div");
-    // board.className = "";
+    board.id = "board";
 
     for (let row = 0; row < this.levelPlan.length; row++) {
       const rowElem = document.createElement("div");
@@ -258,14 +261,13 @@ class Level {
   complete(cbs: (() => void)[]) {
     setTimeout(() => {
       window.alert(`Level ${this.levelNum} complete! 🎉`);
-
       cbs.forEach((cb) => cb());
     }, 400);
   }
 }
 
 class Game {
-  private currentLevelIndex = 0;
+  currentLevelIndex = 0;
   levels: Level[] = [];
 
   constructor(levelsFile: string) {
@@ -323,12 +325,14 @@ class Game {
       const moveSuccessful = level.movePlayer(event.code);
       if (moveSuccessful) {
         level.render();
-
-        const isCompleted = level.isCompleted();
-        if (isCompleted) {
-          this.incrementLevelNum();
-          const nextLevel = this.getCurrentLevel();
-          level.complete([() => this.loadLevel(nextLevel), () => this.renderLevelDisplayNum()]);
+        if (level.isCompleted()) {
+          if (this.isGameWon()) {
+            this.winGame([() => alert("cb fires")]);
+          } else {
+            this.incrementLevelNum();
+            const nextLevel = this.getCurrentLevel();
+            level.complete([() => this.loadLevel(nextLevel), () => this.renderLevelDisplayNum()]);
+          }
         }
       }
     }
@@ -381,6 +385,21 @@ class Game {
       levelDisplay.textContent = `Level ${this.getCurrentLevelNum()}`;
     }
   }
+
+  isGameWon() {
+    console.log("this.getCurrentLevelNum(): ", this.getCurrentLevelNum(), " this.levels.length - 1: ", this.levels.length - 1);
+    if (this.currentLevelIndex === this.levels.length - 1) {
+      return true;
+    }
+    return false;
+  }
+
+  winGame(cbs: (() => void)[]) {
+    setTimeout(() => {
+      window.alert("You won the entire game 🎉");
+      cbs.forEach((cb) => cb());
+    }, 400);
+  }
 }
 
-new Game("pickedlevels.txt");
+new Game("testing.txt");
