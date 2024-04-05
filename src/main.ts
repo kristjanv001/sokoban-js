@@ -143,8 +143,6 @@ class Level {
     }
 
     gameContainer.appendChild(board);
-
-    console.log(this.levelPlan)
   }
 
   /**
@@ -256,34 +254,56 @@ class Level {
   isCompleted(): boolean {
     return !this.levelPlan.some((row) => row.includes("$"));
   }
+
+  complete(cbs: (() => void)[]) {
+    setTimeout(() => {
+      window.alert(`Level ${this.levelNum} complete! 🎉`);
+
+      cbs.forEach((cb) => cb());
+    }, 400);
+  }
 }
 
 class Game {
-  startLevel = 1;
-  currentLevel = this.startLevel;
+  private currentLevelIndex = 0;
   levels: Level[] = [];
 
   constructor(levelsFile: string) {
     this.setupGame(levelsFile);
   }
 
+  getLevelByNum(levelNum: number): Level | Error {
+    if (levelNum > 0 && levelNum < this.levels.length) {
+      return this.levels[levelNum - 1];
+    }
+    return new Error(`Requested level ${levelNum} does not exists`);
+  }
+
+  getCurrentLevel(): Level {
+    return this.levels[this.currentLevelIndex];
+  }
+
+  getCurrentLevelNum() {
+    return this.currentLevelIndex + 1;
+  }
+
+  incrementLevelNum() {
+    if (this.currentLevelIndex < this.levels.length) {
+      this.currentLevelIndex += 1;
+    }
+  }
+
   /**
    * Sets up the game with the first level.
    * @param {string} levelsFile - File name of a txt file that contains level data
    */
-  async setupGame(levelsFile: string): Promise<void> {
+  private async setupGame(levelsFile: string): Promise<void> {
     try {
       this.levels = await this.parseLevelsFile(levelsFile);
-
-      const level = this.levels[this.currentLevel - 1];
-
-      // move these calls to loadLevel() in the Game class
-      level.initializePlayer();
-      level.draw("game");
-      level.render();
-
+      this.loadLevel(this.getCurrentLevel());
+      this.renderLevelDisplayNum();
       document.body.addEventListener("keydown", (event) => {
-        this.handleKeyDown(level, event);
+        this.handleKeyDown(event);
       });
     } catch (error) {
       console.error("Error setting up game:", error);
@@ -294,33 +314,28 @@ class Game {
    * What happens when the user presses a key?
    * If the move was a success (the levelPlan state was changed),
    * then render the grid based on that new state.
-   * @param {Level} level - Level obj
    * @param {KeyboardEvent} event - Such as "ArrowUp"
    */
-  handleKeyDown(level: Level, event: KeyboardEvent): void { // ⚠️ wh does it get a level????
-    const keyPress = event.code;
+  handleKeyDown(event: KeyboardEvent): void {
+    const level = this.getCurrentLevel();
 
-    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(keyPress)) {
-      const moveSuccessful = level.movePlayer(keyPress);
-
+    if (this.isMovementKey(event.code)) {
+      const moveSuccessful = level.movePlayer(event.code);
       if (moveSuccessful) {
         level.render();
-        console.log("level: ", this.currentLevel)
 
         const isCompleted = level.isCompleted();
-
         if (isCompleted) {
-          setTimeout(() => {
-            // levelCompleted() method
-            window.alert("Level complete! 🎉");
-            this.currentLevel++;
-
-            const nextLevel = this.levels[this.currentLevel - 1];
-            this.loadLevel(nextLevel);
-          }, 400);
+          this.incrementLevelNum();
+          const nextLevel = this.getCurrentLevel();
+          level.complete([() => this.loadLevel(nextLevel), () => this.renderLevelDisplayNum()]);
         }
       }
     }
+  }
+
+  private isMovementKey(keyPress: string): boolean {
+    return ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(keyPress);
   }
 
   /**
@@ -353,14 +368,18 @@ class Game {
   }
 
   loadLevel(level: Level) {
-    console.log("next level loaded...");
-
     level.initializePlayer();
     level.draw("game");
     level.render();
 
-    console.log("loaded level: ", level)
+    console.log("loaded level: ", level);
+  }
 
+  renderLevelDisplayNum(): void {
+    const levelDisplay = document.getElementById("levelNum");
+    if (levelDisplay) {
+      levelDisplay.textContent = `Level ${this.getCurrentLevelNum()}`;
+    }
   }
 }
 
