@@ -1,4 +1,5 @@
 import "./style.css";
+import autoAnimate from "@formkit/auto-animate"
 
 type Position = [number, number];
 
@@ -124,6 +125,8 @@ class Level {
 
       return;
     }
+
+    autoAnimate(gameContainer);
 
     const board = document.createElement("div");
     board.id = "board";
@@ -411,7 +414,7 @@ class Game {
 
   completeLevel(cbs: (() => void)[]) {
     setTimeout(() => {
-      window.alert(`Level ${this.getCurrentLevelNum() - 1} complete! 🎉`);
+      // window.alert(`Level ${this.getCurrentLevelNum() - 1} complete! 🎉`);
       cbs.forEach((cb) => cb());
     }, 400);
   }
