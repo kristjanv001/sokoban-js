@@ -24,25 +24,11 @@
   </head>
   <body class="relative h-screen bg-neutral-900">
     <header class="flex flex-col items-center justify-center text-gray-400 xs:h-[120px] md:h-[140px] lg:h-[160px]">
-      <h1 class="text-3xl font-bold">sokoban</h1>
-      <!-- <p id="levelNum" class="mt-2 font-bold text-green-600"></p> -->
-      <div class="mt-4 flex w-full items-center justify-center px-4">
-        <div class="mr-4 flex h-5 w-5 items-center justify-center rounded-full bg-green-600">
-          <span class="text-black"> 1 </span>
-        </div>
-        <div class="mr-4 flex h-5 w-5 items-center justify-center rounded-full border border-gray-400">
-          <span class="text-gray-400"> 2 </span>
-        </div>
-        <div class="mr-4 flex h-5 w-5 items-center justify-center rounded-full border border-gray-400">
-          <span class="text-gray-400"> 3 </span>
-        </div>
-        <div class="mr-4 flex h-5 w-5 items-center justify-center rounded-full border border-gray-400">
-          <span class="text-gray-400"> 4 </span>
-        </div>
-        <div class="mr-4 flex h-5 w-5 items-center justify-center rounded-full border border-gray-400">
-          <span class="text-gray-400"> 5 </span>
-        </div>
+      <div class="flex w-full px-4 md:px-8">
+        <h1 class="font-mono text-xl lg:text-2xl">sokoban game</h1>
       </div>
+      <!-- <p id="levelNum" class="mt-2 font-bold text-green-600"></p> -->
+      <div id="levelsList" class="mt-4 flex w-full items-center justify-center px-4"></div>
     </header>
     <main class="relative h-[calc(100vh-180px)] bg-neutral-900 px-4 pb-8 md:px-8">
       <div id="game" class="flex h-full max-w-[1400px] items-center justify-center rounded-lg bg-neutral-800"></div>

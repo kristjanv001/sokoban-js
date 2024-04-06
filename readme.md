@@ -1,6 +1,6 @@
 # Sokoban JS
 
-A sokoban game written in vanilla JavaScript with the help of Vite and Tailwind.
+A sokoban game written in TypeScript with the help of Vite, Tailwind and AutoAnimate.
 
 
 ⚠️ Work in Progress ⚠️

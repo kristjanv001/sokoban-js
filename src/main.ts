@@ -1,5 +1,5 @@
 import "./style.css";
-import autoAnimate from "@formkit/auto-animate"
+import autoAnimate from "@formkit/auto-animate";
 
 type Position = [number, number];
 
@@ -19,8 +19,6 @@ const charMap: { [key: string]: string } = {
   ".": "bg-yellow-600 scale-[0.3] rounded-md",
   // FLOOR
   " ": "bg-neutral-800",
-  //
-  "9": "bg-red-600",
 };
 
 class Player {
@@ -130,7 +128,6 @@ class Level {
 
     const board = document.createElement("div");
     board.id = "board";
-
 
     for (let row = 0; row < this.levelPlan.length; row++) {
       const rowElem = document.createElement("div");
@@ -256,7 +253,7 @@ class Level {
 
   /**
    * Checks if the level has been completed or not.
-   * Level is completed when all the boxes are on goals.
+   * Level is completed when there are no regular ($) boxes left.
    */
   isCompleted(): boolean {
     return !this.levelPlan.some((row) => row.includes("$"));
@@ -300,11 +297,10 @@ class Game {
     try {
       this.levels = await this.parseLevelsFile(levelsFile);
       this.loadLevel(this.getCurrentLevel());
-      this.renderLevelDisplayNum();
+      this.renderLevelsListDisplay();
       document.body.addEventListener("keydown", (event) => {
         this.handleKeyDown(event);
       });
-
     } catch (error) {
       console.error("Error setting up game:", error);
     }
@@ -347,7 +343,7 @@ class Game {
   prepareNextLevel() {
     this.incrementLevelNum();
     const nextLevel = this.getCurrentLevel();
-    this.completeLevel([() => this.loadLevel(nextLevel), () => this.renderLevelDisplayNum()]);
+    this.completeLevel([() => this.loadLevel(nextLevel)]);
   }
 
   private isMovementKey(keyPress: string): boolean {
@@ -391,13 +387,6 @@ class Game {
     console.log("loaded level: ", level);
   }
 
-  renderLevelDisplayNum(): void {
-    const levelDisplay = document.getElementById("levelNum");
-    if (levelDisplay) {
-      levelDisplay.textContent = `Level ${this.getCurrentLevelNum()}`;
-    }
-  }
-
   isGameCompleted() {
     if (this.currentLevelIndex === this.levels.length - 1) {
       return true;
@@ -408,7 +397,7 @@ class Game {
   completeGame() {
     setTimeout(() => {
       // window.alert("You won the entire game 🎉");
-      this.renderCompletionDisplay()
+      this.renderCompletionDisplay();
       // cbs.forEach((cb) => cb());
     }, 400);
   }
@@ -416,6 +405,7 @@ class Game {
   completeLevel(cbs: (() => void)[]) {
     setTimeout(() => {
       // window.alert(`Level ${this.getCurrentLevelNum() - 1} complete! 🎉`);
+      this.updateLevelNumDisplay(this.getCurrentLevelNum() - 1);
       cbs.forEach((cb) => cb());
     }, 400);
   }
@@ -426,12 +416,45 @@ class Game {
 
     const endMsg = document.createElement("h2");
     endMsg.textContent = "Congratulations, you completed the entire game ✨";
-    endMsg.className = "text-3xl text-neutral-400"
-
-
+    endMsg.className = "text-3xl text-neutral-400";
 
     document.getElementById("game")?.appendChild(endMsg);
   }
+
+  renderLevelsListDisplay() {
+    const createAndAppendLevelNumContainer = (levelNum: number) => {
+      const levelNumContainer = document.createElement("div");
+      levelNumContainer.className =
+        "mr-4 flex h-5 w-5 md:h-7 md:w-7 lg:h-10 lg:w-10 items-center justify-center rounded-full border border-gray-400";
+      levelNumContainer.id = `level-${levelNum}`;
+
+      const levelNumElem = document.createElement("span");
+      levelNumElem.className = "text-gray-400";
+      levelNumElem.textContent = levelNum.toString();
+
+      levelNumContainer.appendChild(levelNumElem);
+
+      levelsListContainer!.appendChild(levelNumContainer);
+    };
+
+    const levelsListContainer = document.getElementById("levelsList");
+    autoAnimate(levelsListContainer!);
+
+    this.levels.forEach((level, index) => {
+      setTimeout(() => {
+        createAndAppendLevelNumContainer(level.levelNum);
+      }, index * 250);
+    });
+  }
+
+  updateLevelNumDisplay(levelNum: number) {
+    const levelNumContainer = document.getElementById(`level-${levelNum}`)!;
+    levelNumContainer.classList.remove("border-gray-400");
+    levelNumContainer.classList.add("border-green-600", "bg-green-600");
+
+    levelNumContainer.firstElementChild!.classList.remove("text-gray-400");
+    levelNumContainer.firstElementChild!.classList.add("text-black");
+  }
 }
 
-new Game("testing.txt");
+new Game("testing2.txt");
