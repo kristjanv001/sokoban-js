@@ -22,15 +22,17 @@
       }
     </style>
   </head>
-  <body class="relative h-screen bg-neutral-900">
-    <header class="flex flex-col items-center justify-center text-gray-400 xs:h-[120px] md:h-[140px] lg:h-[160px]">
+  <body class="h-screen justify-center bg-neutral-900">
+    <header
+      class="mx-auto flex max-w-[1400px] flex-col items-center justify-center text-gray-400 xs:h-[120px] md:h-[140px] lg:h-[160px]"
+    >
       <div class="flex w-full px-4 md:px-8">
         <h1 class="font-mono text-xl lg:text-2xl">sokoban game</h1>
       </div>
       <!-- <p id="levelNum" class="mt-2 font-bold text-green-600"></p> -->
       <div id="levelsList" class="mt-4 flex w-full items-center justify-center px-4"></div>
     </header>
-    <main class="relative h-[calc(100vh-180px)] bg-neutral-900 px-4 pb-8 md:px-8">
+    <main class="mx-auto h-[calc(100vh-180px)] max-w-[1400px] bg-neutral-900 px-4 pb-8 md:px-8">
       <div id="game" class="flex h-full max-w-[1400px] items-center justify-center rounded-lg bg-neutral-800"></div>
     </main>
     <script type="module" src="/src/main.ts"></script>
