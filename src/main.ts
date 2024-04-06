@@ -398,6 +398,7 @@ class Game {
     setTimeout(() => {
       // window.alert("You won the entire game 🎉");
       this.renderCompletionDisplay();
+      this.updateLevelNumDisplay(this.getCurrentLevelNum());
       // cbs.forEach((cb) => cb());
     }, 400);
   }
@@ -425,7 +426,12 @@ class Game {
     const createAndAppendLevelNumContainer = (levelNum: number) => {
       const levelNumContainer = document.createElement("div");
       levelNumContainer.className =
-        "mr-4 flex h-5 w-5 md:h-7 md:w-7 lg:h-10 lg:w-10 items-center justify-center rounded-full border border-gray-400";
+        "flex h-5 w-5 md:h-7 md:w-7 lg:h-10 lg:w-10 items-center justify-center rounded-full border-2 border-gray-400";
+
+      if (levelNum !== this.levels.length) {
+        levelNumContainer.classList.add("mr-4");
+      }
+
       levelNumContainer.id = `level-${levelNum}`;
 
       const levelNumElem = document.createElement("span");
@@ -457,4 +463,4 @@ class Game {
   }
 }
 
-new Game("testing2.txt");
+new Game("testing.txt");
