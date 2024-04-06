@@ -41,9 +41,11 @@ class Level {
   player!: Player;
   levelNum: number;
   levelPlan: string[][];
+  initlLevelPlan: string[][];
 
   constructor(levelPlan: string[][], levelNum: number) {
     this.levelPlan = levelPlan;
+    this.initlLevelPlan = levelPlan.map((row) => [...row]);
     this.levelNum = levelNum;
   }
 
@@ -176,6 +178,7 @@ class Level {
       if (sym === "$" || sym === "*") {
         this.moveBox(newRow, newCol, direction);
       }
+      // ⚠️ mutating original player pos
       this.player.pos = [newRow, newCol];
 
       return true;
@@ -205,6 +208,7 @@ class Level {
     const origCellVal = this.levelPlan[row][col] === "*" ? "." : " ";
     const nextCellVal = this.levelPlan[nextRow][nextCol] === "." ? "*" : "$";
 
+    // ⚠️ mutating original box locations
     this.levelPlan[nextRow][nextCol] = nextCellVal;
     this.levelPlan[row][col] = origCellVal;
   }
@@ -298,6 +302,7 @@ class Game {
       this.levels = await this.parseLevelsFile(levelsFile);
       this.loadLevel(this.getCurrentLevel());
       this.renderLevelsListDisplay();
+      this.renderKeyboardHintsDisplay();
       document.body.addEventListener("keydown", (event) => {
         this.handleKeyDown(event);
       });
@@ -313,6 +318,10 @@ class Game {
    * @param {KeyboardEvent} event - Such as "ArrowUp"
    */
   handleKeyDown(event: KeyboardEvent): void {
+    if (event.code === "KeyR" && !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
+      this.restartLevel();
+    }
+
     if (!this.isMovementKey(event.code)) {
       return;
     }
@@ -329,6 +338,13 @@ class Game {
     if (level.isCompleted()) {
       this.processLevelCompletion();
     }
+  }
+
+  restartLevel() {
+    console.log("restarting level...");
+    const currentLevel = this.getCurrentLevel();
+    currentLevel.levelPlan = currentLevel.initlLevelPlan.map((row) => [...row]);
+    this.loadLevel(this.getCurrentLevel());
   }
 
   processLevelCompletion() {
@@ -396,9 +412,9 @@ class Game {
 
   completeGame() {
     setTimeout(() => {
-      // window.alert("You won the entire game 🎉");
       this.renderCompletionDisplay();
       this.updateLevelNumDisplay(this.getCurrentLevelNum());
+      this.cleanUpDisplay();
       // cbs.forEach((cb) => cb());
     }, 400);
   }
@@ -418,7 +434,6 @@ class Game {
     const endMsg = document.createElement("h2");
     endMsg.textContent = "Congratulations, you completed the entire game ✨";
     endMsg.className = "text-3xl text-neutral-400";
-
     document.getElementById("game")?.appendChild(endMsg);
   }
 
@@ -453,6 +468,14 @@ class Game {
     });
   }
 
+  renderKeyboardHintsDisplay() {
+    const container = document.getElementById("keyHints")!;
+    const restartHint = document.createElement("span");
+    restartHint.textContent = "Press 'R' to restart level";
+
+    container.appendChild(restartHint);
+  }
+
   updateLevelNumDisplay(levelNum: number) {
     const levelNumContainer = document.getElementById(`level-${levelNum}`)!;
     levelNumContainer.classList.remove("border-gray-400");
@@ -460,6 +483,10 @@ class Game {
 
     levelNumContainer.firstElementChild!.classList.remove("text-gray-400");
     levelNumContainer.firstElementChild!.classList.add("text-black");
+  }
+
+  cleanUpDisplay() {
+    document.getElementById("keyHints")!.classList.add("invisible");
   }
 }
 
