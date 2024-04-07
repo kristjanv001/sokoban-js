@@ -5,43 +5,95 @@
     <!-- <link rel="icon" type="image/svg+xml" href="/vite.svg" /> -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sokoban Game</title>
+
+    <!-- FOUC -->
     <style>
       body {
-        background-color: #1a202c;
+        background-color: #171717;
         color: #cbd5e0;
         position: relative;
         height: 100vh;
       }
+
       header {
+        margin-left: auto;
+        margin-right: auto;
         display: flex;
-        color: #9ca3af;
         flex-direction: column;
-        justify-content: center;
         align-items: center;
-        height: 120px;
+        justify-content: center;
+        color: #9ca3af;
+        max-width: 1400px;
+        height: 100px;
+      }
+
+      header > div {
+        display: flex;
+        width: 100%;
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      /* <h1 class="font-mono text-xl lg:text-2xl"> */
+      header > div > h1 {
+        font-size: 20px;
+        line-height: 28px;
+      }
+
+      #levelsList {
+        width: 100%;
+        display: flex;
+        margin-top: 16px;
+        align-items: center;
+        justify-content: center;
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      a {
+        color: #9ca3af;
+        text-decoration: none;
+      }
+
+      main {
+        height: calc(100vh - 100px - 60px - 30px);
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 1400px;
+        background-color: #171717;
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      footer {
+      }
+
+      footer > p {
+      }
+
+      footer > p > a {
+        color: #115e59;
       }
     </style>
   </head>
-  <body class="h-screen justify-center bg-neutral-900">
-    <header
-      class="mx-auto flex h-[100px] max-w-[1400px] flex-col items-center justify-center text-gray-400 xs:h-[120px] md:h-[140px] lg:h-[160px]"
-    >
-      <div class="flex w-full px-4 md:px-8">
-        <h1 class="font-mono text-xl lg:text-2xl">sokoban</h1>
+  <body>
+    <header class="xs:h-[120px] md:h-[140px] lg:h-[160px]">
+      <div class="md:px-8">
+        <h1 class="font-mono lg:text-2xl">
+          <a href="index.html">sokoban</a>
+        </h1>
       </div>
-      <div id="levelsList" class="mt-4 flex w-full items-center justify-center px-4 md:px-8"></div>
+      <div id="levelsList" class="md:px-8"></div>
     </header>
     <main
-      class="mx-auto h-[calc(100vh-100px-60px-30px)] max-w-[1400px] bg-neutral-900 px-4 xs:h-[calc(100vh-120px-60px-30px)] md:h-[calc(100vh-140px-60px-30px)] md:px-8 lg:h-[calc(100vh-160px-60px)]"
+      class="xs:h-[calc(100vh-120px-60px-30px)] md:h-[calc(100vh-140px-60px-30px)] md:px-8 lg:h-[calc(100vh-160px-60px)]"
     >
       <div id="game" class="flex h-full items-center justify-center rounded-lg bg-neutral-800">
         <div id="keyHints" class="absolute bottom-20 hidden text-lg text-neutral-500 lg:block"></div>
       </div>
     </main>
     <footer class="mx-auto flex h-[60px] max-w-[1400px] items-center justify-end">
-      <p class="px-4 text-sm text-neutral-600 md:px-8">
-        made by <a href="https://www.kristjanvingel.com" class="text-teal-800">kristjan</a>
-      </p>
+      <p class="px-4 text-sm text-neutral-600 md:px-8">made by <a href="https://www.kristjanvingel.com">kristjan</a></p>
     </footer>
     <script type="module" src="/src/main.ts"></script>
   </body>

@@ -499,7 +499,7 @@ class Game {
     levelNumContainer.classList.remove("border-neutral-500");
     levelNumContainer.classList.add("border-emerald-600", "bg-emerald-600");
 
-    levelNumContainer.firstElementChild!.classList.remove("text-gray-400");
+    levelNumContainer.firstElementChild!.classList.remove("text-neutral-500");
     levelNumContainer.firstElementChild!.classList.add("text-black");
   }
 
