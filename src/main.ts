@@ -580,4 +580,4 @@ class Game {
   }
 }
 
-new Game("testing.txt");
+new Game("prod.txt");
