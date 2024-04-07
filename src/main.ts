@@ -309,7 +309,9 @@ class Game {
       this.renderLevelsListDisplay();
       this.renderKeyboardHintsDisplay();
       this.renderRestartBtn();
-      document.body.addEventListener("keydown", (event) => {
+      this.renderArrowButtons();
+
+      document.addEventListener("keydown", (event) => {
         this.handleKeyDown(event);
       });
     } catch (error) {
@@ -486,12 +488,72 @@ class Game {
     const container = document.getElementById("game")!;
     const button = document.createElement("button");
     button.id = "restartBtn";
-    button.className =
-      "absolute right-0 top-0 mr-4 mt-4 rounded-xl bg-neutral-700 px-3 py-1 text-xs text-neutral-400 lg:hidden";
+    button.className = "absolute right-4 top-4 rounded-xl bg-neutral-700 px-3 py-1 text-xs text-neutral-400 lg:hidden";
     button.textContent = "restart level";
-    button.addEventListener("click", () => this.restartLevel())
+    button.addEventListener("click", () => this.restartLevel());
 
     container.appendChild(button);
+  }
+
+  renderArrowButtons() {
+    const btnsHTML = `
+      <button id="upBtn" class="col-start-2 row-start-1 rounded-md bg-neutral-700 px-3 py-1">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="h-6 w-6"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75 12 3m0 0 3.75 3.75M12 3v18" />
+        </svg>
+      </button>
+      <button id="leftBtn" class="col-start-1 row-start-2 rounded-md bg-neutral-700 px-3 py-1">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="h-6 w-6"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75 3 12m0 0 3.75-3.75M3 12h18" />
+        </svg>
+      </button>
+      <button id="downBtn" class="col-start-2 row-start-2 rounded-md bg-neutral-700 px-3 py-1">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="h-6 w-6"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25 12 21m0 0-3.75-3.75M12 21V3" />
+        </svg>
+      </button>
+      <button id="rightBtn" class="col-start-3 row-start-2 rounded-md bg-neutral-700 px-3 py-1">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="h-6 w-6"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
+        </svg>
+      </button>`;
+
+
+    const container = document.getElementById("arrowBtnContainer")!;
+    container.innerHTML = btnsHTML;
+
+    document.getElementById("upBtn")!.addEventListener("click", () => this.simulateKeyPress("ArrowUp"));
+    document.getElementById("downBtn")!.addEventListener("click", () => this.simulateKeyPress("ArrowDown"));
+    document.getElementById("leftBtn")!.addEventListener("click", () => this.simulateKeyPress("ArrowLeft"));
+    document.getElementById("rightBtn")!.addEventListener("click", () => this.simulateKeyPress("ArrowRight"));
   }
 
   updateLevelNumDisplay(levelNum: number) {
@@ -506,6 +568,12 @@ class Game {
   cleanUpDisplay() {
     document.getElementById("keyHints")!.classList.add("invisible");
     document.getElementById("restartBtn")!.classList.add("invisible");
+  }
+
+  simulateKeyPress(keyCode: string) {
+    console.log(keyCode);
+    const event = new KeyboardEvent("keydown", { code: keyCode });
+    document.dispatchEvent(event);
   }
 }
 

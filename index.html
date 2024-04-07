@@ -87,8 +87,12 @@
     <main
       class="xs:h-[calc(100vh-120px-60px-30px)] md:h-[calc(100vh-140px-60px-30px)] md:px-8 lg:h-[calc(100vh-160px-60px)]"
     >
-      <div id="game" class="flex h-full items-center justify-center rounded-lg bg-neutral-800">
+      <div id="game" class="relative flex h-full items-center justify-center rounded-lg bg-neutral-800">
         <div id="keyHints" class="absolute bottom-20 hidden text-lg text-neutral-500 lg:block"></div>
+        <div
+          id="arrowBtnContainer"
+          class="absolute bottom-4 right-4 grid grid-cols-3 grid-rows-2 gap-1 rounded-lg bg-neutral-900 bg-opacity-40 p-3 text-neutral-400 lg:hidden"
+        ></div>
       </div>
     </main>
     <footer class="mx-auto flex h-[60px] max-w-[1400px] items-center justify-end">
