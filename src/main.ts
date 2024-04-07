@@ -6,19 +6,23 @@ type Position = [number, number];
 const defaultGridStyles = "h-8 w-8 xs:h-12 xs:w-12 sm:w-14 sm:h-14 md:w-18 md:h-18 flex justify-center items-center";
 const charMap: { [key: string]: string } = {
   // WALL
-  "#": "bg-gray-600 border-8 border-gray-700 rounded-md scale-[0.98]",
+  // "#": "bg-gray-600 border-8 border-gray-700 rounded-md scale-[0.98]",
+  "#": "bg-[url('../public/textures/wall2.png')] bg-cover bg-no-repeat grayscale opacity-25 rounded-lg ",
   // PLAYER
-  "@": "bg-blue-600 rounded-full scale-75 -hue-rotate-60",
+  "@": "bg-blue-700 rounded-full scale-75 ",
   // PLAYER ON GOAL
   "+": "bg-blue-600 rounded-full scale-75",
   // BOX
-  $: "bg-yellow-800 rounded-md scale-[0.85] border-8 border-yellow-900",
+  // $: "bg-yellow-800 rounded-md scale-[0.85] border-8 border-yellow-900",
+  $: "bg-[url('../public/textures/box.png')] bg-cover bg-no-repeat opacity-70 rounded-lg scale-[0.85]",
   // BOX ON GOAL
-  "*": "bg-yellow-700 rounded-md scale-[0.85] border-8 border-yellow-600",
+  // "*": "bg-yellow-700 rounded-md scale-[0.85] border-8 border-yellow-600",
+  "*": "bg-[url('../public/textures/box.png')] bg-cover bg-no-repeat rounded-lg scale-[0.85] opacity-70  bg-blend-luminosity bg-yellow-500",
   // GOAL
   ".": "bg-yellow-600 scale-[0.3] rounded-md",
   // FLOOR
   " ": "bg-neutral-800",
+  // " ": "bg-[url('../public/textures/floor.png')] bg-cover bg-no-repeat opacity-100",
 };
 
 class Player {
@@ -479,7 +483,7 @@ class Game {
   updateLevelNumDisplay(levelNum: number) {
     const levelNumContainer = document.getElementById(`level-${levelNum}`)!;
     levelNumContainer.classList.remove("border-gray-400");
-    levelNumContainer.classList.add("border-green-600", "bg-green-600");
+    levelNumContainer.classList.add("border-emerald-600", "bg-emerald-600");
 
     levelNumContainer.firstElementChild!.classList.remove("text-gray-400");
     levelNumContainer.firstElementChild!.classList.add("text-black");
@@ -490,4 +494,4 @@ class Game {
   }
 }
 
-new Game("testing.txt");
+new Game("testing2.txt");
