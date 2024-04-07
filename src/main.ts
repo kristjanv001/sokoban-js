@@ -7,7 +7,7 @@ const defaultGridStyles = "h-8 w-8 xs:h-12 xs:w-12 sm:w-14 sm:h-14 md:w-18 md:h-
 const charMap: { [key: string]: string } = {
   // WALL
   // "#": "bg-gray-600 border-8 border-gray-700 rounded-md scale-[0.98]",
-  "#": "bg-[url('../public/textures/wall2.png')] bg-cover bg-no-repeat grayscale opacity-25 rounded-lg ",
+  "#": "bg-[url('../public/textures/wall2.png')] bg-cover bg-no-repeat grayscale opacity-25 rounded-md",
   // PLAYER
   "@": "bg-blue-700 rounded-full scale-75 ",
   // PLAYER ON GOAL
@@ -19,7 +19,8 @@ const charMap: { [key: string]: string } = {
   // "*": "bg-yellow-700 rounded-md scale-[0.85] border-8 border-yellow-600",
   "*": "bg-[url('../public/textures/box.png')] bg-cover bg-no-repeat rounded-lg scale-[0.85] opacity-70  bg-blend-luminosity bg-yellow-500",
   // GOAL
-  ".": "bg-yellow-600 scale-[0.3] rounded-md",
+  // ".": "bg-yellow-600 scale-[0.3] rounded-md",
+  ".": "bg-[url('../public/textures/goal.png')] bg-cover bg-no-repeat opacity-50 rounded-md scale-[0.5] ",
   // FLOOR
   " ": "bg-neutral-800",
   // " ": "bg-[url('../public/textures/floor.png')] bg-cover bg-no-repeat opacity-100",
@@ -307,6 +308,7 @@ class Game {
       this.loadLevel(this.getCurrentLevel());
       this.renderLevelsListDisplay();
       this.renderKeyboardHintsDisplay();
+      this.renderRestartBtn();
       document.body.addEventListener("keydown", (event) => {
         this.handleKeyDown(event);
       });
@@ -437,7 +439,7 @@ class Game {
 
     const endMsg = document.createElement("h2");
     endMsg.textContent = "Congratulations, you completed the entire game ✨";
-    endMsg.className = "text-3xl text-neutral-400";
+    endMsg.className = "text-3xl text-neutral-400 px-8";
     document.getElementById("game")?.appendChild(endMsg);
   }
 
@@ -445,16 +447,16 @@ class Game {
     const createAndAppendLevelNumContainer = (levelNum: number) => {
       const levelNumContainer = document.createElement("div");
       levelNumContainer.className =
-        "flex h-5 w-5 md:h-7 md:w-7 lg:h-10 lg:w-10 items-center justify-center rounded-full border-2 border-gray-400";
+        "flex h-5 w-5 md:h-7 md:w-7 lg:h-10 lg:w-10 items-center justify-center rounded-full border-2 border-neutral-500";
 
       if (levelNum !== this.levels.length) {
-        levelNumContainer.classList.add("mr-4");
+        levelNumContainer.classList.add("mr-2", "sm:mr-4");
       }
 
       levelNumContainer.id = `level-${levelNum}`;
 
       const levelNumElem = document.createElement("span");
-      levelNumElem.className = "text-gray-400";
+      levelNumElem.className = "text-neutral-500";
       levelNumElem.textContent = levelNum.toString();
 
       levelNumContainer.appendChild(levelNumElem);
@@ -480,9 +482,21 @@ class Game {
     container.appendChild(restartHint);
   }
 
+  renderRestartBtn() {
+    const container = document.getElementById("game")!;
+    const button = document.createElement("button");
+    button.id = "restartBtn";
+    button.className =
+      "absolute right-0 top-0 mr-4 mt-4 rounded-xl bg-neutral-700 px-3 py-1 text-xs text-neutral-400 lg:hidden";
+    button.textContent = "restart level";
+    button.addEventListener("click", () => this.restartLevel())
+
+    container.appendChild(button);
+  }
+
   updateLevelNumDisplay(levelNum: number) {
     const levelNumContainer = document.getElementById(`level-${levelNum}`)!;
-    levelNumContainer.classList.remove("border-gray-400");
+    levelNumContainer.classList.remove("border-neutral-500");
     levelNumContainer.classList.add("border-emerald-600", "bg-emerald-600");
 
     levelNumContainer.firstElementChild!.classList.remove("text-gray-400");
@@ -491,7 +505,8 @@ class Game {
 
   cleanUpDisplay() {
     document.getElementById("keyHints")!.classList.add("invisible");
+    document.getElementById("restartBtn")!.classList.add("invisible");
   }
 }
 
-new Game("testing2.txt");
+new Game("testing.txt");
