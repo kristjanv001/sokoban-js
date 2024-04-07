@@ -7,9 +7,9 @@ const defaultGridStyles = "h-8 w-8 xs:h-12 xs:w-12 sm:w-14 sm:h-14 md:w-18 md:h-
 const charMap: { [key: string]: string } = {
   // WALL
   // "#": "bg-gray-600 border-8 border-gray-700 rounded-md scale-[0.98]",
-  "#": "bg-[url('../public/textures/wall2.png')] bg-cover bg-no-repeat grayscale opacity-25 rounded-md",
+  "#": "bg-[url('../public/textures/wall2.png')] bg-cover bg-no-repeat grayscale opacity-25 rounded-md ",
   // PLAYER
-  "@": "bg-blue-700 rounded-full scale-75 ",
+  "@": "bg-blue-700 rounded-full scale-75",
   // PLAYER ON GOAL
   "+": "bg-blue-600 rounded-full scale-75",
   // BOX
@@ -22,9 +22,11 @@ const charMap: { [key: string]: string } = {
   // ".": "bg-yellow-600 scale-[0.3] rounded-md",
   ".": "bg-[url('../public/textures/goal.png')] bg-cover bg-no-repeat opacity-50 rounded-md scale-[0.5] ",
   // FLOOR
-  " ": "bg-neutral-800",
+  " ": "bg-neutral-800 ",
   // " ": "bg-[url('../public/textures/floor.png')] bg-cover bg-no-repeat opacity-100",
 };
+
+
 
 class Player {
   position: Position;
@@ -94,7 +96,11 @@ class Level {
       const cell = document.getElementById(`cell-${pos[0]}-${pos[1]}`);
 
       if (cell) {
-        cell.className = `${defaultGridStyles} ${charMap[charKey]}`;
+        const newClass = `${defaultGridStyles} ${charMap[charKey]}`
+
+        if (cell.className !== newClass) {
+          cell.className = `${defaultGridStyles} ${charMap[charKey]}`;
+        }
       }
     };
 
@@ -102,8 +108,8 @@ class Level {
       for (let col = this.player.pos[1] - 1; col <= this.player.pos[1] + 1; col++) {
         const currItem = this.levelPlan[row][col];
 
-        const gridItem = document.getElementById(`cell-${row}-${col}`);
-        if (gridItem && currItem !== "#") {
+        if (currItem !== "#") {
+          const gridItem = document.getElementById(`cell-${row}-${col}`)!;
           gridItem.className = `${charMap[currItem]} ${defaultGridStyles}`;
         }
       }
@@ -349,7 +355,6 @@ class Game {
   }
 
   restartLevel() {
-    console.log("restarting level...");
     const currentLevel = this.getCurrentLevel();
     currentLevel.levelPlan = currentLevel.initlLevelPlan.map((row) => [...row]);
     this.loadLevel(this.getCurrentLevel());
@@ -407,8 +412,6 @@ class Game {
     level.initializePlayer();
     level.draw("game");
     level.render();
-
-    console.log("loaded level: ", level);
   }
 
   isGameCompleted() {

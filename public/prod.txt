@@ -1,0 +1,110 @@
+Level 1
+'level 3 from microban'
+  ####
+###  ####
+#     $ #
+# #  #$ #
+# . .#@ #
+#########
+
+Level 2
+'level 14 from microban'
+#######
+#     #
+# # # #
+#. $*@#
+#   ###
+#####
+
+Level 3
+;  7/38  A 0:15
+'4 mp Jack 990505-01'
+'level 1 from sokogen
+#####
+#@  ##
+#.$* #
+#  # #
+#    #
+######
+
+Level 4
+;  7/33  A 0:15 1:45
+'6 mp Smyg-smirf 990526-03'
+'level 10 from sokogen'
+#######
+#@ ..##
+# #$ ##
+# #   #
+#  $# #
+#  *  #
+#######
+
+Level 5
+; 17/58  C 1:15      3:25
+'7 mp Jack 990507-07'
+'level 22 from sokogen'
+    #####
+ #### . #
+ # @$   #
+ #   ** #
+ #    ###
+ ######
+
+Level 6
+; 20/113 F 4:00
+'9 mp Smyg-smirf 990526-02b'
+'level 70 from sokogen'
+ #######
+ ##  ###
+ ##    #
+ # $. .#
+ # #$$ #
+ #@ .###
+ #######
+
+Level 7
+'MINICOSMOS 27'
+'level 27 from minicosmos'
+ ####
+ #  ####
+ #     #
+ # #.  #
+##*##$##
+#      #
+# # @  #
+#    ###
+######
+
+Level 8
+'level 1 from murase'
+ ######
+##  . #
+# * # #
+# .$  #
+#  #$##
+## @ #
+ #####
+
+Level 9
+'level 5 from murase'
+   ####
+   # @##
+####   #
+#. #$$ #
+#     ##
+#.  $##
+##.  #
+ #####
+
+Level 10
+'MICROCOSMOS 03'
+'level 3 from microcosmos'
+   ####
+####  #
+#  $  ##
+# #$#  #
+#  $   #
+#.###  #
+#.#### #
+#. @   #
+########
