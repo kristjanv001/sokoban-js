@@ -546,7 +546,6 @@ class Game {
         </svg>
       </button>`;
 
-
     const container = document.getElementById("arrowBtnContainer")!;
     container.innerHTML = btnsHTML;
 
@@ -566,8 +565,9 @@ class Game {
   }
 
   cleanUpDisplay() {
-    document.getElementById("keyHints")!.classList.add("invisible");
-    document.getElementById("restartBtn")!.classList.add("invisible");
+    document.querySelectorAll("#keyHints, #restartBtn, #arrowBtnContainer").forEach((elem) => {
+      elem.classList.add("invisible");
+    });
   }
 
   simulateKeyPress(keyCode: string) {
