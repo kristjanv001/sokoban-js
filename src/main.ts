@@ -26,8 +26,6 @@ const charMap: { [key: string]: string } = {
   // " ": "bg-[url('../public/textures/floor.png')] bg-cover bg-no-repeat opacity-100",
 };
 
-
-
 class Player {
   position: Position;
 
@@ -96,7 +94,7 @@ class Level {
       const cell = document.getElementById(`cell-${pos[0]}-${pos[1]}`);
 
       if (cell) {
-        const newClass = `${defaultGridStyles} ${charMap[charKey]}`
+        const newClass = `${defaultGridStyles} ${charMap[charKey]}`;
 
         if (cell.className !== newClass) {
           cell.className = `${defaultGridStyles} ${charMap[charKey]}`;
@@ -189,7 +187,7 @@ class Level {
       if (sym === "$" || sym === "*") {
         this.moveBox(newRow, newCol, direction);
       }
-      // ⚠️ mutating original player pos
+
       this.player.pos = [newRow, newCol];
 
       return true;
@@ -219,7 +217,6 @@ class Level {
     const origCellVal = this.levelPlan[row][col] === "*" ? "." : " ";
     const nextCellVal = this.levelPlan[nextRow][nextCol] === "." ? "*" : "$";
 
-    // ⚠️ mutating original box locations
     this.levelPlan[nextRow][nextCol] = nextCellVal;
     this.levelPlan[row][col] = origCellVal;
   }
@@ -278,6 +275,7 @@ class Level {
 class Game {
   currentLevelIndex = 0;
   levels: Level[] = [];
+  stateStack = [];
 
   constructor(levelsFile: string) {
     this.setupGame(levelsFile);
@@ -332,7 +330,7 @@ class Game {
    * @param {KeyboardEvent} event - Such as "ArrowUp"
    */
   handleKeyDown(event: KeyboardEvent): void {
-    if (event.code === "KeyR" && !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
+    if (this.isRestartKey(event)) {
       this.restartLevel();
     }
 
@@ -377,6 +375,10 @@ class Game {
 
   private isMovementKey(keyPress: string): boolean {
     return ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(keyPress);
+  }
+
+  private isRestartKey(event: KeyboardEvent): boolean {
+    return event.code === "KeyR" && !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey
   }
 
   /**
