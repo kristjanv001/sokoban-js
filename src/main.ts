@@ -7,20 +7,20 @@ const defaultGridStyles = "h-8 w-8 xs:h-12 xs:w-12 sm:w-14 sm:h-14 md:w-18 md:h-
 const charMap: { [key: string]: string } = {
   // WALL
   // "#": "bg-gray-600 border-8 border-gray-700 rounded-md scale-[0.98]",
-  "#": "bg-[url('../public/textures/wall2.png')] bg-cover bg-no-repeat grayscale opacity-25 rounded-md ",
+  "#": "bg-[url('/textures/wall2.png')] bg-cover bg-no-repeat grayscale opacity-25 rounded-md ",
   // PLAYER
   "@": "bg-blue-700 rounded-full scale-75",
   // PLAYER ON GOAL
   "+": "bg-blue-600 rounded-full scale-75",
   // BOX
   // $: "bg-yellow-800 rounded-md scale-[0.85] border-8 border-yellow-900",
-  $: "bg-[url('../public/textures/box.png')] bg-cover bg-no-repeat opacity-70 rounded-lg scale-[0.85]",
+  $: "bg-[url('/textures/box.png')] bg-cover bg-no-repeat opacity-70 rounded-lg scale-[0.85]",
   // BOX ON GOAL
   // "*": "bg-yellow-700 rounded-md scale-[0.85] border-8 border-yellow-600",
-  "*": "bg-[url('../public/textures/box.png')] bg-cover bg-no-repeat rounded-lg scale-[0.85] opacity-70  bg-blend-luminosity bg-yellow-500",
+  "*": "bg-[url('/textures/box.png')] bg-cover bg-no-repeat rounded-lg scale-[0.85] opacity-70  bg-blend-luminosity bg-yellow-500",
   // GOAL
   // ".": "bg-yellow-600 scale-[0.3] rounded-md",
-  ".": "bg-[url('../public/textures/goal.png')] bg-cover bg-no-repeat opacity-50 rounded-md scale-[0.5] ",
+  ".": "bg-[url('/textures/goal.png')] bg-cover bg-no-repeat opacity-50 rounded-md scale-[0.5] ",
   // FLOOR
   " ": "bg-neutral-800 ",
   // " ": "bg-[url('../public/textures/floor.png')] bg-cover bg-no-repeat opacity-100",
@@ -263,6 +263,9 @@ class Level {
     return true;
   }
 
+  // TODO
+  undoMove() {}
+
   /**
    * Checks if the level has been completed or not.
    * Level is completed when there are no regular ($) boxes left.
@@ -275,7 +278,6 @@ class Level {
 class Game {
   currentLevelIndex = 0;
   levels: Level[] = [];
-  stateStack = [];
 
   constructor(levelsFile: string) {
     this.setupGame(levelsFile);
@@ -313,6 +315,7 @@ class Game {
       this.renderLevelsListDisplay();
       this.renderKeyboardHintsDisplay();
       this.renderRestartBtn();
+      // this.renderUndoBtn();
       this.renderArrowButtons();
 
       document.addEventListener("keydown", (event) => {
@@ -330,15 +333,22 @@ class Game {
    * @param {KeyboardEvent} event - Such as "ArrowUp"
    */
   handleKeyDown(event: KeyboardEvent): void {
+    const level = this.getCurrentLevel();
+
     if (this.isRestartKey(event)) {
       this.restartLevel();
+      return;
+    }
+
+    if (this.isUndoKey(event)) {
+      level.undoMove()
+      return;
     }
 
     if (!this.isMovementKey(event.code)) {
       return;
     }
 
-    const level = this.getCurrentLevel();
     const moveSuccessful = level.movePlayer(event.code);
 
     if (!moveSuccessful) {
@@ -378,7 +388,11 @@ class Game {
   }
 
   private isRestartKey(event: KeyboardEvent): boolean {
-    return event.code === "KeyR" && !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey
+    return event.code === "KeyR" && !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey;
+  }
+
+  private isUndoKey(event: KeyboardEvent): boolean {
+    return event.code === "KeyU";
   }
 
   /**
@@ -493,9 +507,23 @@ class Game {
     const container = document.getElementById("game")!;
     const button = document.createElement("button");
     button.id = "restartBtn";
-    button.className = "absolute right-4 top-4 rounded-xl bg-neutral-700 px-3 py-1 text-xs text-neutral-400 lg:hidden";
+    button.className =
+      "w-24 absolute right-4 top-4 rounded-xl bg-neutral-700 px-3 py-1 text-xs text-neutral-400 lg:hidden";
     button.textContent = "restart level";
     button.addEventListener("click", () => this.restartLevel());
+
+    container.appendChild(button);
+  }
+
+  renderUndoBtn() {
+    const container = document.getElementById("game")!;
+    const button = document.createElement("button");
+    button.id = "undoBtn";
+    button.className =
+      "w-24 absolute right-4 top-12 rounded-xl bg-neutral-700 px-3 py-1 text-xs text-neutral-400 lg:hidden";
+    button.textContent = "undo move";
+
+    // button.addEventListener("click", () => console.log("undoing..."));
 
     container.appendChild(button);
   }
@@ -570,7 +598,7 @@ class Game {
   }
 
   cleanUpDisplay() {
-    document.querySelectorAll("#keyHints, #restartBtn, #arrowBtnContainer").forEach((elem) => {
+    document.querySelectorAll("#keyHints, #restartBtn, #undoBtn #arrowBtnContainer").forEach((elem) => {
       elem.classList.add("invisible");
     });
   }
